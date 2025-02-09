@@ -2,12 +2,14 @@ package com.vaibhavranga.shoppingapp.presentation.screens
 
 import android.content.Context
 import android.widget.Toast
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.OutlinedTextField
@@ -17,6 +19,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -28,7 +32,7 @@ import com.vaibhavranga.shoppingapp.ui.theme.ShoppingAppTheme
 
 @Composable
 fun SignUpScreen(
-    modifier: Modifier = Modifier,
+    onSignUpSuccessful: () -> Unit,
     viewModel: ViewModel = hiltViewModel()
 ) {
     val createUser = viewModel.createUserState.collectAsStateWithLifecycle()
@@ -41,17 +45,45 @@ fun SignUpScreen(
 
     Box(
         contentAlignment = Alignment.Center,
-        modifier = modifier
+        modifier = Modifier
             .fillMaxSize()
             .padding(8.dp)
     ) {
+        Canvas(
+            modifier = Modifier
+                .size(200.dp)
+                .align(alignment = Alignment.TopEnd)
+        ) {
+            drawCircle(
+                color = Color(red = 232, green = 144, blue = 142),
+                radius = size.width,
+                center = Offset(
+                    x = size.width.times(0.6f),
+                    y = size.height.times(-0.5f)
+                )
+            )
+        }
+        Canvas(
+            modifier = Modifier
+                .size(100.dp)
+                .align(alignment = Alignment.BottomStart)
+        ) {
+            drawCircle(
+                color = Color(red = 232, green = 144, blue = 142),
+                radius = size.width,
+                center = Offset(
+                    x = size.width.times(0.2f),
+                    y = size.height.times(1.4f)
+                )
+            )
+        }
         Column(
             verticalArrangement = Arrangement.spacedBy(
                 space = 8.dp,
                 alignment = Alignment.CenterVertically
             ),
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = modifier
+            modifier = Modifier
                 .fillMaxSize()
         ) {
             Text(text = "Sign Up")
@@ -142,15 +174,21 @@ fun SignUpScreen(
         }
         when {
             createUser.value.isLoading -> CircularProgressIndicator()
-            createUser.value.error != null -> showToast(
-                context = context,
-                message = createUser.value.error.toString()
-            )
+            createUser.value.error != null -> {
+                showToast(
+                    context = context,
+                    message = createUser.value.error.toString()
+                )
+                viewModel.clearCreateUserState()
+            }
 
-            createUser.value.data != null -> showToast(
-                context = context,
-                message = createUser.value.data.toString()
-            )
+            createUser.value.data != null -> {
+                showToast(
+                    context = context,
+                    message = createUser.value.data.toString()
+                )
+                onSignUpSuccessful()
+            }
         }
     }
 }
@@ -163,6 +201,6 @@ fun showToast(context: Context, message: String) {
 @Composable
 private fun SignUpScreenPreview() {
     ShoppingAppTheme {
-        SignUpScreen()
+        SignUpScreen(onSignUpSuccessful = {})
     }
 }

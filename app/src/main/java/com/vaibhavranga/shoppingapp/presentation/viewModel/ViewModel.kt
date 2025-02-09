@@ -36,6 +36,10 @@ class ViewModel @Inject constructor(
         }
     }
 
+    fun clearCreateUserState() {
+        _createUserState.value = CreateUserState()
+    }
+
     fun signInWithEmailAndPassword(email: String, password: String) {
         viewModelScope.launch(Dispatchers.IO) {
             signInWithEmailAndPassword.signInWithEmailAndPassword(email = email, password = password).collect { response ->
@@ -46,6 +50,10 @@ class ViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    fun clearSignInWithEmailAndPasswordState() {
+        _signInWithEmailAndPasswordState.value = SignInWithEmailAndPasswordState()
     }
 }
 
