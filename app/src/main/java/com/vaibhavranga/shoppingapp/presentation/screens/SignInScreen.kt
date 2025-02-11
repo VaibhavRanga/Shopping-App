@@ -19,12 +19,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.vaibhavranga.shoppingapp.presentation.viewModel.ViewModel
+import com.vaibhavranga.shoppingapp.ui.theme.Pink
 
 @Composable
 fun SignInScreen(
@@ -50,7 +50,7 @@ fun SignInScreen(
                 .align(alignment = Alignment.TopEnd)
         ) {
             drawCircle(
-                color = Color(red = 232, green = 144, blue = 142),
+                color = Pink,
                 radius = size.width,
                 center = Offset(
                     x = size.width.times(0.6f),
@@ -64,7 +64,7 @@ fun SignInScreen(
                 .align(alignment = Alignment.BottomStart)
         ) {
             drawCircle(
-                color = Color(red = 232, green = 144, blue = 142),
+                color = Pink,
                 radius = size.width,
                 center = Offset(
                     x = size.width.times(0.2f),
