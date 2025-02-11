@@ -1,5 +1,6 @@
 package com.vaibhavranga.shoppingapp.data.repositoryImpl
 
+import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.vaibhavranga.shoppingapp.common.CATEGORY_PATH
@@ -99,7 +100,9 @@ class RepositoryImpl @Inject constructor(
             firebaseFirestore.collection(PRODUCT_PATH).get()
                 .addOnSuccessListener {
                     val products = it.documents.mapNotNull { document ->
-                        document.toObject(ProductModel::class.java)
+                        document.toObject(ProductModel::class.java)?.apply {
+                            productId = document.id
+                        }
                     }
                     trySend(ResultState.Success(data = products))
                 }

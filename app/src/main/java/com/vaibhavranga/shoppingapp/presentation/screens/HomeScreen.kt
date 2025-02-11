@@ -96,21 +96,19 @@ fun HomeScreen(
                 modifier = Modifier
                     .fillMaxWidth()
             )
-            if (isShowingCategories) {
-                CategoriesBlock(
-                    categories = allCategories.value.data!!,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .wrapContentHeight()
-                )
-            }
-            if (isShowingProducts) {
-                FlashSaleBlock(
-                    products = allProducts.value.data!!,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                )
-            }
+            CategoriesBlock(
+                isShowingCategories = isShowingCategories,
+                categories = allCategories.value.data ?: emptyList(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight()
+            )
+            FlashSaleBlock(
+                isShowingProducts = isShowingProducts,
+                products = allProducts.value.data ?: emptyList(),
+                modifier = Modifier
+                    .fillMaxWidth()
+            )
         }
         when {
             allCategories.value.isLoading -> CircularProgressIndicator()
@@ -178,6 +176,7 @@ fun SearchBarRow(
 
 @Composable
 fun CategoriesBlock(
+    isShowingCategories: Boolean,
     categories: List<CategoryModel>,
     modifier: Modifier = Modifier
 ) {
@@ -201,38 +200,40 @@ fun CategoriesBlock(
                 Text(text = "See more", color = Pink)
             }
         }
-        LazyRow(
-            horizontalArrangement = Arrangement.spacedBy(space = 8.dp)
-        ) {
-            items(
-                items = categories,
-                key = { it.categoryName }
-            ) { category ->
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(
-                        space = 8.dp,
-                        alignment = Alignment.CenterVertically
-                    ),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier
-                        .size(85.dp)
-                ) {
-                    AsyncImage(
-                        model = category.categoryImageUrl,
-                        contentDescription = category.categoryName,
+        if (isShowingCategories) {
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(space = 8.dp)
+            ) {
+                items(
+                    items = categories,
+                    key = { it.categoryName }
+                ) { category ->
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(
+                            space = 8.dp,
+                            alignment = Alignment.CenterVertically
+                        ),
+                        horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier
-                            .size(55.dp)
-                            .background(color = Color.White)
-                            .clip(shape = CircleShape)
-                            .border(width = 2.dp, color = Color.Gray, shape = CircleShape)
-                            .padding(8.dp)
-                    )
-                    Text(
-                        text = category.categoryName,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = Gray,
-                        maxLines = 2
-                    )
+                            .size(85.dp)
+                    ) {
+                        AsyncImage(
+                            model = category.categoryImageUrl,
+                            contentDescription = category.categoryName,
+                            modifier = Modifier
+                                .size(55.dp)
+                                .background(color = Color.White)
+                                .clip(shape = CircleShape)
+                                .border(width = 2.dp, color = Color.Gray, shape = CircleShape)
+                                .padding(8.dp)
+                        )
+                        Text(
+                            text = category.categoryName,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Gray,
+                            maxLines = 2
+                        )
+                    }
                 }
             }
         }
@@ -241,6 +242,7 @@ fun CategoriesBlock(
 
 @Composable
 fun FlashSaleBlock(
+    isShowingProducts: Boolean,
     products: List<ProductModel>,
     modifier: Modifier = Modifier
 ) {
@@ -264,85 +266,87 @@ fun FlashSaleBlock(
                 Text(text = "See more", color = Pink)
             }
         }
-        LazyRow(
-            horizontalArrangement = Arrangement.spacedBy(space = 16.dp)
-        ) {
-            items(
-                items = products,
-                key = { it.name }
-            ) { product ->
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(space = 8.dp),
-                    modifier = Modifier
-                        .height(300.dp)
-                        .width(120.dp)
-                ) {
-                    AsyncImage(
-                        model = product.imageUrl,
-                        contentDescription = product.name,
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(150.dp)
-                            .clip(shape = RoundedCornerShape(size = 16.dp))
-                            .border(
-                                width = 1.dp,
-                                color = Gray,
-                                shape = RoundedCornerShape(size = 16.dp)
-                            )
-                    )
+        if (isShowingProducts) {
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(space = 16.dp)
+            ) {
+                items(
+                    items = products,
+                    key = { it.name }
+                ) { product ->
                     Column(
-                        horizontalAlignment = Alignment.Start,
-                        verticalArrangement = Arrangement.SpaceBetween,
+                        verticalArrangement = Arrangement.spacedBy(space = 8.dp),
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .height(120.dp)
-                            .border(
-                                width = 1.dp,
-                                color = Gray,
-                                shape = RoundedCornerShape(size = 16.dp)
-                            )
-                            .padding(8.dp)
+                            .height(300.dp)
+                            .width(120.dp)
                     ) {
-                        Text(
-                            text = product.name,
-                            style = MaterialTheme.typography.labelLarge.copy(
-                                color = Gray,
-                                fontWeight = FontWeight.Normal
-                            ),
-                            maxLines = 3,
-                            overflow = TextOverflow.Ellipsis
+                        AsyncImage(
+                            model = product.imageUrl,
+                            contentDescription = product.name,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(150.dp)
+                                .clip(shape = RoundedCornerShape(size = 16.dp))
+                                .border(
+                                    width = 1.dp,
+                                    color = Gray,
+                                    shape = RoundedCornerShape(size = 16.dp)
+                                )
                         )
-                        Column {
-                            Row(
-                                verticalAlignment = Alignment.Bottom,
-                                horizontalArrangement = Arrangement.Start
-                            ) {
-                                Text(
-                                    text = "Rs ",
-                                    style = MaterialTheme.typography.titleMedium.copy(color = Pink)
+                        Column(
+                            horizontalAlignment = Alignment.Start,
+                            verticalArrangement = Arrangement.SpaceBetween,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(120.dp)
+                                .border(
+                                    width = 1.dp,
+                                    color = Gray,
+                                    shape = RoundedCornerShape(size = 16.dp)
                                 )
-                                Text(
-                                    text = product.finalPrice,
-                                    color = Pink,
-                                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                                    overflow = TextOverflow.Ellipsis
-                                )
-                            }
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.Start
-                            ) {
-                                Text(
-                                    text = "Rs ",
-                                    style = MaterialTheme.typography.titleMedium
-                                )
-                                Text(
-                                    text = product.price,
-                                    style = MaterialTheme.typography.bodyLarge.copy(
-                                        textDecoration = TextDecoration.LineThrough
+                                .padding(8.dp)
+                        ) {
+                            Text(
+                                text = product.name,
+                                style = MaterialTheme.typography.labelLarge.copy(
+                                    color = Gray,
+                                    fontWeight = FontWeight.Normal
+                                ),
+                                maxLines = 3,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                            Column {
+                                Row(
+                                    verticalAlignment = Alignment.Bottom,
+                                    horizontalArrangement = Arrangement.Start
+                                ) {
+                                    Text(
+                                        text = "Rs ",
+                                        style = MaterialTheme.typography.titleMedium.copy(color = Pink)
                                     )
-                                )
+                                    Text(
+                                        text = product.finalPrice,
+                                        color = Pink,
+                                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                }
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.Start
+                                ) {
+                                    Text(
+                                        text = "Rs ",
+                                        style = MaterialTheme.typography.titleMedium
+                                    )
+                                    Text(
+                                        text = product.price,
+                                        style = MaterialTheme.typography.bodyLarge.copy(
+                                            textDecoration = TextDecoration.LineThrough
+                                        )
+                                    )
+                                }
                             }
                         }
                     }
@@ -357,6 +361,7 @@ fun FlashSaleBlock(
 private fun HomeScreenPreview() {
     ShoppingAppTheme {
         FlashSaleBlock(
+            isShowingProducts = true,
             products = listOf(
                 ProductModel(
                     name = "Nike Sportswear",

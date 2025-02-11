@@ -2,6 +2,7 @@ package com.vaibhavranga.shoppingapp.domain.model
 
 data class ProductModel(
     val name: String = "",
+    var productId: String = "",
     val price: String = "",
     val finalPrice: String = "",
     val description: String = "",
