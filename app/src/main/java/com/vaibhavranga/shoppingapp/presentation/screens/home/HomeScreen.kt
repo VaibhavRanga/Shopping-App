@@ -1,4 +1,4 @@
-package com.vaibhavranga.shoppingapp.presentation.screens
+package com.vaibhavranga.shoppingapp.presentation.screens.home
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -53,6 +53,7 @@ import coil3.compose.AsyncImage
 import com.vaibhavranga.shoppingapp.domain.model.CategoryModel
 import com.vaibhavranga.shoppingapp.domain.model.ProductModel
 import com.vaibhavranga.shoppingapp.presentation.common.CustomTextField
+import com.vaibhavranga.shoppingapp.presentation.screens.auth.showToast
 import com.vaibhavranga.shoppingapp.presentation.viewModel.ViewModel
 import com.vaibhavranga.shoppingapp.ui.theme.Gray
 import com.vaibhavranga.shoppingapp.ui.theme.Pink
@@ -60,6 +61,8 @@ import com.vaibhavranga.shoppingapp.ui.theme.ShoppingAppTheme
 
 @Composable
 fun HomeScreen(
+    onNotificationsButtonClick: () -> Unit,
+    onSeeMoreCategoriesClick: () -> Unit,
     viewModel: ViewModel = hiltViewModel()
 ) {
     val allCategories = viewModel.getAllCategoriesState.collectAsStateWithLifecycle()
@@ -93,12 +96,14 @@ fun HomeScreen(
             SearchBarRow(
                 value = searchQuery,
                 onSearchValueChange = { searchQuery = it },
+                onNotificationsButtonClick = onNotificationsButtonClick,
                 modifier = Modifier
                     .fillMaxWidth()
             )
             CategoriesBlock(
                 isShowingCategories = isShowingCategories,
                 categories = allCategories.value.data ?: emptyList(),
+                onSeeMoreCategoriesClick = onSeeMoreCategoriesClick,
                 modifier = Modifier
                     .fillMaxWidth()
                     .wrapContentHeight()
@@ -145,6 +150,7 @@ fun HomeScreen(
 fun SearchBarRow(
     value: String,
     onSearchValueChange: (String) -> Unit,
+    onNotificationsButtonClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -164,11 +170,11 @@ fun SearchBarRow(
                 .width(16.dp)
         )
         IconButton(
-            onClick = {}
+            onClick = onNotificationsButtonClick
         ) {
             Icon(
                 imageVector = Icons.Outlined.Notifications,
-                contentDescription = "Notification",
+                contentDescription = "Notifications",
             )
         }
     }
@@ -178,6 +184,7 @@ fun SearchBarRow(
 fun CategoriesBlock(
     isShowingCategories: Boolean,
     categories: List<CategoryModel>,
+    onSeeMoreCategoriesClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -195,7 +202,7 @@ fun CategoriesBlock(
                 style = MaterialTheme.typography.titleLarge
             )
             TextButton(
-                onClick = {}
+                onClick = onSeeMoreCategoriesClick
             ) {
                 Text(text = "See more", color = Pink)
             }

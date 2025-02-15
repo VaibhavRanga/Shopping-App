@@ -2,6 +2,7 @@ package com.vaibhavranga.shoppingapp.presentation.viewModel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.auth.FirebaseAuth
 import com.vaibhavranga.shoppingapp.common.ResultState
 import com.vaibhavranga.shoppingapp.domain.model.CategoryModel
 import com.vaibhavranga.shoppingapp.domain.model.ProductModel
@@ -23,7 +24,8 @@ class ViewModel @Inject constructor(
     private val createUserUseCase: CreateUserUseCase,
     private val signInWithEmailAndPasswordUseCase: SignInWithEmailAndPasswordUseCase,
     private val getAllCategoriesUseCase: GetAllCategoriesUseCase,
-    private val getAllProductsUseCase: GetAllProductsUseCase
+    private val getAllProductsUseCase: GetAllProductsUseCase,
+    private val firebaseAuth: FirebaseAuth
 ) : ViewModel() {
     private val _createUserState = MutableStateFlow(CreateUserState())
     val createUserState = _createUserState.asStateFlow()
@@ -99,6 +101,10 @@ class ViewModel @Inject constructor(
 
     fun clearGetAllProductsState() {
         _getAllProductsState.value = GetAllProductsState()
+    }
+
+    fun signOut() {
+        firebaseAuth.signOut()
     }
 }
 

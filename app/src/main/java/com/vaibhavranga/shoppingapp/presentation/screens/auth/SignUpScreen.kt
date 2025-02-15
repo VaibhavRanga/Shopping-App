@@ -1,5 +1,7 @@
-package com.vaibhavranga.shoppingapp.presentation.screens
+package com.vaibhavranga.shoppingapp.presentation.screens.auth
 
+import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -12,7 +14,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -20,22 +21,26 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.vaibhavranga.shoppingapp.domain.model.UserDataModel
 import com.vaibhavranga.shoppingapp.presentation.viewModel.ViewModel
 import com.vaibhavranga.shoppingapp.ui.theme.Pink
+import com.vaibhavranga.shoppingapp.ui.theme.ShoppingAppTheme
 
 @Composable
-fun SignInScreen(
-    onSignUpButtonClick: () -> Unit,
-    onSignInWithEmailAndPasswordSuccess: () -> Unit,
+fun SignUpScreen(
+    onSignUpSuccessful: () -> Unit,
     viewModel: ViewModel = hiltViewModel()
 ) {
-    val signInWithEmailAndPassword =
-        viewModel.signInWithEmailAndPasswordState.collectAsStateWithLifecycle()
+    val createUser = viewModel.createUserState.collectAsStateWithLifecycle()
+    val firstName = remember { mutableStateOf("") }
+    val lastName = remember { mutableStateOf("") }
     val email = remember { mutableStateOf("") }
     val password = remember { mutableStateOf("") }
+    val confirmPassword = remember { mutableStateOf("") }
     val context = LocalContext.current
 
     Box(
@@ -74,14 +79,36 @@ fun SignInScreen(
         }
         Column(
             verticalArrangement = Arrangement.spacedBy(
-                space = 16.dp,
+                space = 8.dp,
                 alignment = Alignment.CenterVertically
             ),
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
                 .fillMaxSize()
         ) {
-            Text(text = "Sign In")
+            Text(text = "Sign Up")
+            OutlinedTextField(
+                value = firstName.value,
+                onValueChange = {
+                    firstName.value = it
+                },
+                label = {
+                    Text(text = "First name")
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+            )
+            OutlinedTextField(
+                value = lastName.value,
+                onValueChange = {
+                    lastName.value = it
+                },
+                label = {
+                    Text(text = "Last name")
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+            )
             OutlinedTextField(
                 value = email.value,
                 onValueChange = {
@@ -104,49 +131,76 @@ fun SignInScreen(
                 modifier = Modifier
                     .fillMaxWidth()
             )
+            OutlinedTextField(
+                value = confirmPassword.value,
+                onValueChange = {
+                    confirmPassword.value = it
+                },
+                label = {
+                    Text(text = "Confirm password")
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+            )
             Button(
                 onClick = {
-                    if (
-                        email.value.isNotBlank()
+                    if (firstName.value.isNotBlank()
+                        && lastName.value.isNotBlank()
+                        && email.value.isNotBlank()
                         && password.value.isNotBlank()
+                        && confirmPassword.value.isNotBlank()
                     ) {
-                        viewModel.signInWithEmailAndPassword(
-                            email = email.value,
-                            password = password.value
-                        )
+                        if (password.value == confirmPassword.value) {
+                            val userData = UserDataModel(
+                                firstName = firstName.value,
+                                lastName = lastName.value,
+                                email = email.value,
+                                password = password.value
+                            )
+                            viewModel.createUser(userData = userData)
+                        } else {
+                            showToast(
+                                context = context,
+                                message = "Password and confirm password are different"
+                            )
+                        }
                     } else {
-                        showToast(
-                            context = context,
-                            message = "Please enter all values"
-                        )
+                        showToast(context = context, message = "Please enter all details")
                     }
                 }
-            ) {
-                Text(text = "Sign In")
-            }
-            TextButton(
-                onClick = onSignUpButtonClick
             ) {
                 Text(text = "Sign Up")
             }
         }
         when {
-            signInWithEmailAndPassword.value.isLoading -> CircularProgressIndicator()
-            signInWithEmailAndPassword.value.error != null -> {
+            createUser.value.isLoading -> CircularProgressIndicator()
+            createUser.value.error != null -> {
                 showToast(
                     context = context,
-                    message = signInWithEmailAndPassword.value.error.toString()
+                    message = createUser.value.error.toString()
                 )
-                viewModel.clearSignInWithEmailAndPasswordState()
+                viewModel.clearCreateUserState()
             }
 
-            signInWithEmailAndPassword.value.data != null -> {
+            createUser.value.data != null -> {
                 showToast(
                     context = context,
-                    message = signInWithEmailAndPassword.value.data.toString()
+                    message = createUser.value.data.toString()
                 )
-                onSignInWithEmailAndPasswordSuccess()
+                onSignUpSuccessful()
             }
         }
+    }
+}
+
+fun showToast(context: Context, message: String) {
+    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+}
+
+@Preview(showSystemUi = true)
+@Composable
+private fun SignUpScreenPreview() {
+    ShoppingAppTheme {
+        SignUpScreen(onSignUpSuccessful = {})
     }
 }
