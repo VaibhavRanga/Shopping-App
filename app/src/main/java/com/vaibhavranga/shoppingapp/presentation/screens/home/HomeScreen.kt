@@ -2,6 +2,7 @@ package com.vaibhavranga.shoppingapp.presentation.screens.home
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -62,6 +63,7 @@ import com.vaibhavranga.shoppingapp.ui.theme.ShoppingAppTheme
 @Composable
 fun HomeScreen(
     onNotificationsButtonClick: () -> Unit,
+    onCategoryClick: (categoryName: String) -> Unit,
     onSeeMoreCategoriesClick: () -> Unit,
     viewModel: ViewModel = hiltViewModel()
 ) {
@@ -103,6 +105,9 @@ fun HomeScreen(
             CategoriesBlock(
                 isShowingCategories = isShowingCategories,
                 categories = allCategories.value.data ?: emptyList(),
+                onCategoryClick = {
+                    onCategoryClick(it)
+                },
                 onSeeMoreCategoriesClick = onSeeMoreCategoriesClick,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -184,6 +189,7 @@ fun SearchBarRow(
 fun CategoriesBlock(
     isShowingCategories: Boolean,
     categories: List<CategoryModel>,
+    onCategoryClick: (categoryName: String) -> Unit,
     onSeeMoreCategoriesClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -223,6 +229,9 @@ fun CategoriesBlock(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier
                             .size(85.dp)
+                            .clickable {
+                                onCategoryClick(category.categoryName)
+                            }
                     ) {
                         AsyncImage(
                             model = category.categoryImageUrl,
@@ -267,11 +276,6 @@ fun FlashSaleBlock(
                 text = "Flash Sale",
                 style = MaterialTheme.typography.titleLarge
             )
-            TextButton(
-                onClick = {}
-            ) {
-                Text(text = "See more", color = Pink)
-            }
         }
         if (isShowingProducts) {
             LazyRow(
