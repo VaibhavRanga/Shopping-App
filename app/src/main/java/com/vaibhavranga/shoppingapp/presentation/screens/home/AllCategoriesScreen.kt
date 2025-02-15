@@ -1,6 +1,6 @@
 package com.vaibhavranga.shoppingapp.presentation.screens.home
 
-import androidx.compose.foundation.background
+import android.widget.Toast
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -35,7 +35,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
-import com.vaibhavranga.shoppingapp.presentation.screens.auth.showToast
 import com.vaibhavranga.shoppingapp.presentation.viewModel.ViewModel
 import com.vaibhavranga.shoppingapp.ui.theme.Gray
 import com.vaibhavranga.shoppingapp.ui.theme.Pink
@@ -132,19 +131,9 @@ fun AllCategoriesScreen(
         when {
             allCategories.isLoading -> CircularProgressIndicator()
             allCategories.error != null -> {
-                showToast(
-                    context = context,
-                    message = allCategories.error.toString()
-                )
+                Toast.makeText(context, allCategories.error.toString(), Toast.LENGTH_SHORT).show()
                 viewModel.clearGetAllCategoriesState()
             }
         }
-    }
-}
-
-@Preview
-@Composable
-private fun AllCategoriesPreview() {
-    ShoppingAppTheme {
     }
 }

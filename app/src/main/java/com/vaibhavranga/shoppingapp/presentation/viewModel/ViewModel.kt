@@ -12,6 +12,7 @@ import com.vaibhavranga.shoppingapp.domain.useCase.CreateUserUseCase
 import com.vaibhavranga.shoppingapp.domain.useCase.GetAllCategoriesUseCase
 import com.vaibhavranga.shoppingapp.domain.useCase.GetAllProductsByCategoryUseCase
 import com.vaibhavranga.shoppingapp.domain.useCase.GetAllProductsUseCase
+import com.vaibhavranga.shoppingapp.domain.useCase.GetProductByIdUseCase
 import com.vaibhavranga.shoppingapp.domain.useCase.SignInWithEmailAndPasswordUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -28,6 +29,7 @@ class ViewModel @Inject constructor(
     private val getAllCategoriesUseCase: GetAllCategoriesUseCase,
     private val getAllProductsUseCase: GetAllProductsUseCase,
     private val getAllProductsByCategoryUseCase: GetAllProductsByCategoryUseCase,
+    private val getProductByIdUseCase: GetProductByIdUseCase,
     private val firebaseAuth: FirebaseAuth
 ) : ViewModel() {
     private val _createUserState = MutableStateFlow(CreateUserState())
@@ -45,6 +47,9 @@ class ViewModel @Inject constructor(
 
     private val _getAllProductsByCategoryState = MutableStateFlow(GetAllProductsByCategory())
     val getAllProductsByCategoryState = _getAllProductsByCategoryState.asStateFlow()
+
+    private val _getProductByIdState = MutableStateFlow(GetProductByIdState())
+    val getProductByIdState = _getProductByIdState.asStateFlow()
 
     fun createUser(userData: UserDataModel) {
         viewModelScope.launch(Dispatchers.IO) {
@@ -157,6 +162,22 @@ class ViewModel @Inject constructor(
         _getAllProductsByCategoryState.value = GetAllProductsByCategory()
     }
 
+    fun getProductById(productId: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            getProductByIdUseCase.invoke(productId = productId).collect { response ->
+                when (response) {
+                    is ResultState.Error -> _getProductByIdState.value = GetProductByIdState(isLoading = false, error = response.error)
+                    ResultState.Loading -> _getProductByIdState.value = GetProductByIdState(isLoading = true)
+                    is ResultState.Success -> _getProductByIdState.value = GetProductByIdState(isLoading = false, data = response.data)
+                }
+            }
+        }
+    }
+
+    fun clearGetProductByIdState() {
+        _getProductByIdState.value = GetProductByIdState()
+    }
+
     fun signOut() {
         firebaseAuth.signOut()
     }
@@ -190,4 +211,10 @@ data class GetAllProductsByCategory(
     val isLoading: Boolean = false,
     val error: String? = null,
     val data: List<ProductModel>? = null
+)
+
+data class GetProductByIdState(
+    val isLoading: Boolean = false,
+    val error: String? = null,
+    val data: ProductModel? = null
 )

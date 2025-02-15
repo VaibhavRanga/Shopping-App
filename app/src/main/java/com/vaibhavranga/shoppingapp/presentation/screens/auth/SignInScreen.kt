@@ -1,5 +1,6 @@
 package com.vaibhavranga.shoppingapp.presentation.screens.auth
 
+import android.widget.Toast
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -115,10 +116,7 @@ fun SignInScreen(
                             password = password.value
                         )
                     } else {
-                        showToast(
-                            context = context,
-                            message = "Please enter all values"
-                        )
+                        Toast.makeText(context, "Please enter all values", Toast.LENGTH_SHORT).show()
                     }
                 }
             ) {
@@ -133,18 +131,11 @@ fun SignInScreen(
         when {
             signInWithEmailAndPassword.value.isLoading -> CircularProgressIndicator()
             signInWithEmailAndPassword.value.error != null -> {
-                showToast(
-                    context = context,
-                    message = signInWithEmailAndPassword.value.error.toString()
-                )
+                Toast.makeText(context, signInWithEmailAndPassword.value.error.toString(), Toast.LENGTH_SHORT).show()
                 viewModel.clearSignInWithEmailAndPasswordState()
             }
 
             signInWithEmailAndPassword.value.data != null -> {
-                showToast(
-                    context = context,
-                    message = signInWithEmailAndPassword.value.data.toString()
-                )
                 onSignInWithEmailAndPasswordSuccess()
             }
         }

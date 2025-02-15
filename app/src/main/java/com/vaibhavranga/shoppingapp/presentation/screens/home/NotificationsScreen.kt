@@ -5,6 +5,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 
 @Composable
-fun NotificationsScreen(modifier: Modifier = Modifier) {
+fun NotificationsScreen() {
     Text(text = "Notifications Screen")
 }

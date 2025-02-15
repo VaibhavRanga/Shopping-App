@@ -1,5 +1,6 @@
 package com.vaibhavranga.shoppingapp.presentation.screens.home
 
+import android.widget.Toast
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -58,7 +59,6 @@ import coil3.compose.AsyncImage
 import com.vaibhavranga.shoppingapp.domain.model.CategoryModel
 import com.vaibhavranga.shoppingapp.domain.model.ProductModel
 import com.vaibhavranga.shoppingapp.presentation.common.CustomTextField
-import com.vaibhavranga.shoppingapp.presentation.screens.auth.showToast
 import com.vaibhavranga.shoppingapp.presentation.viewModel.ViewModel
 import com.vaibhavranga.shoppingapp.ui.theme.Gray
 import com.vaibhavranga.shoppingapp.ui.theme.Pink
@@ -69,6 +69,7 @@ import com.vaibhavranga.shoppingapp.ui.theme.ShoppingAppTheme
 fun HomeScreen(
     onCategoryClick: (categoryName: String) -> Unit,
     onSeeMoreCategoriesClick: () -> Unit,
+    onProductClick: (productId: String) -> Unit,
     viewModel: ViewModel = hiltViewModel()
 ) {
     val allCategories = viewModel.getAllCategoriesState.collectAsStateWithLifecycle()
@@ -123,6 +124,7 @@ fun HomeScreen(
             FlashSaleBlock(
                 isShowingProducts = isShowingProducts,
                 products = allProducts.value.data ?: emptyList(),
+                onProductClick = onProductClick,
                 modifier = Modifier
                     .fillMaxWidth()
             )
@@ -145,10 +147,7 @@ fun HomeScreen(
         when {
             allCategories.value.isLoading -> CircularProgressIndicator()
             allCategories.value.error != null -> {
-                showToast(
-                    context = context,
-                    message = allCategories.value.error.toString()
-                )
+                Toast.makeText(context, allCategories.value.error.toString(), Toast.LENGTH_SHORT).show()
                 viewModel.clearGetAllCategoriesState()
             }
 
@@ -159,10 +158,7 @@ fun HomeScreen(
         when {
             allProducts.value.isLoading -> CircularProgressIndicator()
             allProducts.value.error != null -> {
-                showToast(
-                    context = context,
-                    message = allProducts.value.error.toString()
-                )
+                Toast.makeText(context, allProducts.value.error.toString(), Toast.LENGTH_SHORT).show()
                 viewModel.clearGetAllProductsState()
             }
 
@@ -291,6 +287,7 @@ fun CategoriesBlock(
 fun FlashSaleBlock(
     isShowingProducts: Boolean,
     products: List<ProductModel>,
+    onProductClick: (productId: String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -321,6 +318,9 @@ fun FlashSaleBlock(
                         modifier = Modifier
                             .height(300.dp)
                             .width(120.dp)
+                            .clickable {
+                                onProductClick(product.productId)
+                            }
                     ) {
                         AsyncImage(
                             model = product.imageUrl,
@@ -404,6 +404,7 @@ private fun HomeScreenPreview() {
     ShoppingAppTheme {
         FlashSaleBlock(
             isShowingProducts = true,
+            onProductClick = {},
             products = listOf(
                 ProductModel(
                     name = "Nike Sportswear",

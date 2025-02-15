@@ -16,4 +16,6 @@ interface Repository {
     suspend fun getAllProducts(): Flow<ResultState<List<ProductModel>>>
 
     suspend fun getAllProductsByCategory(categoryName: String): Flow<ResultState<List<ProductModel>>>
+
+    suspend fun getProductById(productId: String): Flow<ResultState<ProductModel>>
 }

@@ -1,6 +1,8 @@
 package com.vaibhavranga.shoppingapp.presentation.screens.home
 
+import android.widget.Toast
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -37,7 +39,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.vaibhavranga.shoppingapp.domain.model.ProductModel
 import com.vaibhavranga.shoppingapp.presentation.common.CustomTextField
-import com.vaibhavranga.shoppingapp.presentation.screens.auth.showToast
 import com.vaibhavranga.shoppingapp.presentation.viewModel.ViewModel
 import com.vaibhavranga.shoppingapp.ui.theme.Pink
 import com.vaibhavranga.shoppingapp.ui.theme.ShoppingAppTheme
@@ -45,6 +46,7 @@ import com.vaibhavranga.shoppingapp.ui.theme.ShoppingAppTheme
 @Composable
 fun AllProductsByCategoryScreen(
     categoryName: String,
+    onProductClick: (productId: String) -> Unit,
     viewModel: ViewModel = hiltViewModel()
 ) {
     var searchQuery by remember { mutableStateOf("") }
@@ -81,7 +83,8 @@ fun AllProductsByCategoryScreen(
             ) {
                 items(items = productsState.data ?: emptyList()) { product ->
                     ProductItem(
-                        product = product
+                        product = product,
+                        onProductClick = onProductClick
                     )
                 }
             }
@@ -89,15 +92,8 @@ fun AllProductsByCategoryScreen(
         when {
             productsState.isLoading -> CircularProgressIndicator()
             productsState.error != null -> {
-                showToast(
-                    context = context,
-                    message = productsState.error.toString()
-                )
+                Toast.makeText(context, productsState.error.toString(), Toast.LENGTH_SHORT).show()
                 viewModel.clearGetAllProductsByCategoryState()
-            }
-
-            productsState.data != null -> {
-
             }
         }
     }
@@ -105,7 +101,8 @@ fun AllProductsByCategoryScreen(
 
 @Composable
 fun ProductItem(
-    product: ProductModel
+    product: ProductModel,
+    onProductClick: (productId: String) -> Unit
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -113,6 +110,9 @@ fun ProductItem(
         modifier = Modifier
             .fillMaxWidth()
             .height(150.dp)
+            .clickable {
+                onProductClick(product.productId)
+            }
     ) {
         AsyncImage(
             model = product.imageUrl,
@@ -170,9 +170,8 @@ fun ProductItem(
 private fun AllProductsScreenPreview() {
     ShoppingAppTheme {
         ProductItem(
-            product = ProductModel(
-
-            )
+            product = ProductModel(),
+            onProductClick = {}
         )
     }
 }

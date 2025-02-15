@@ -1,6 +1,5 @@
 package com.vaibhavranga.shoppingapp.presentation.screens.auth
 
-import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
@@ -159,13 +158,10 @@ fun SignUpScreen(
                             )
                             viewModel.createUser(userData = userData)
                         } else {
-                            showToast(
-                                context = context,
-                                message = "Password and confirm password are different"
-                            )
+                            Toast.makeText(context, "Password and confirm password are different", Toast.LENGTH_SHORT).show()
                         }
                     } else {
-                        showToast(context = context, message = "Please enter all details")
+                        Toast.makeText(context, "Please enter all details", Toast.LENGTH_SHORT).show()
                     }
                 }
             ) {
@@ -175,26 +171,15 @@ fun SignUpScreen(
         when {
             createUser.value.isLoading -> CircularProgressIndicator()
             createUser.value.error != null -> {
-                showToast(
-                    context = context,
-                    message = createUser.value.error.toString()
-                )
+                Toast.makeText(context, createUser.value.error.toString(), Toast.LENGTH_SHORT).show()
                 viewModel.clearCreateUserState()
             }
 
             createUser.value.data != null -> {
-                showToast(
-                    context = context,
-                    message = createUser.value.data.toString()
-                )
                 onSignUpSuccessful()
             }
         }
     }
-}
-
-fun showToast(context: Context, message: String) {
-    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
 }
 
 @Preview(showSystemUi = true)

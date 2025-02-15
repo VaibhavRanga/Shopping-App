@@ -141,4 +141,27 @@ class RepositoryImpl @Inject constructor(
             close()
         }
     }
+
+    override suspend fun getProductById(productId: String): Flow<ResultState<ProductModel>> = callbackFlow {
+        trySend(ResultState.Loading)
+
+        try {
+            firebaseFirestore.collection(PRODUCT_PATH).document(productId).get()
+                .addOnSuccessListener { document ->
+                    val product = document.toObject(ProductModel::class.java)
+                    product?.let {
+                        trySend(ResultState.Success(data = it))
+                    }
+                }
+                .addOnFailureListener {
+                    trySend(ResultState.Error(error = it.message.toString()))
+                }
+        } catch(e: Exception) {
+            trySend(ResultState.Error(error = e.message.toString()))
+        }
+
+        awaitClose {
+            close()
+        }
+    }
 }

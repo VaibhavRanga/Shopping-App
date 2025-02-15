@@ -15,7 +15,7 @@ import com.vaibhavranga.shoppingapp.presentation.screens.home.AllCategoriesScree
 import com.vaibhavranga.shoppingapp.presentation.screens.home.AllProductsByCategoryScreen
 import com.vaibhavranga.shoppingapp.presentation.screens.home.CartScreen
 import com.vaibhavranga.shoppingapp.presentation.screens.home.HomeScreen
-import com.vaibhavranga.shoppingapp.presentation.screens.home.NotificationsScreen
+import com.vaibhavranga.shoppingapp.presentation.screens.home.ProductScreen
 import com.vaibhavranga.shoppingapp.presentation.screens.home.ProfileScreen
 import com.vaibhavranga.shoppingapp.presentation.screens.home.WishListScreen
 import com.vaibhavranga.shoppingapp.presentation.viewModel.ViewModel
@@ -38,26 +38,43 @@ fun HomeNavGraph(
             composable<Home.HomeScreenRoute> {
                 HomeScreen(
                     onCategoryClick = {
-                        homeNavController.navigate(Home.AllProductsByCategoryScreenRoute(categoryName = it))
+                        homeNavController.navigate(
+                            Home.AllProductsByCategoryScreenRoute(
+                                categoryName = it
+                            )
+                        )
                     },
                     onSeeMoreCategoriesClick = {
                         homeNavController.navigate(Home.AllCategoriesScreenRoute)
+                    },
+                    onProductClick = {
+                        homeNavController.navigate(Home.ProductScreenRoute(productId = it))
                     }
                 )
             }
-            composable<Home.NotificationsScreenRoute> {
-                NotificationsScreen()
+            composable<Home.ProductScreenRoute> {
+                val productId = it.toRoute<Home.ProductScreenRoute>().productId
+                ProductScreen(productId = productId)
             }
             composable<Home.AllCategoriesScreenRoute> {
                 AllCategoriesScreen(
                     onCategoryClick = {
-                        homeNavController.navigate(Home.AllProductsByCategoryScreenRoute(categoryName = it))
+                        homeNavController.navigate(
+                            Home.AllProductsByCategoryScreenRoute(
+                                categoryName = it
+                            )
+                        )
                     }
                 )
             }
             composable<Home.AllProductsByCategoryScreenRoute> {
                 val categoryName = it.toRoute<Home.AllProductsByCategoryScreenRoute>().categoryName
-                AllProductsByCategoryScreen(categoryName = categoryName)
+                AllProductsByCategoryScreen(
+                    categoryName = categoryName,
+                    onProductClick = { product ->
+                        homeNavController.navigate(Home.ProductScreenRoute(product))
+                    }
+                )
             }
             composable<Home.WishListScreenRoute> {
                 WishListScreen()
