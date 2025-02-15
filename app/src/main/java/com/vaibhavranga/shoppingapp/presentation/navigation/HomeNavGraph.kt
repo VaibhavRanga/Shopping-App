@@ -52,7 +52,11 @@ fun HomeNavGraph(
                 NotificationsScreen()
             }
             composable<Home.AllCategoriesScreenRoute> {
-                AllCategoriesScreen()
+                AllCategoriesScreen(
+                    onCategoryClick = {
+                        homeNavController.navigate(Home.AllProductsByCategoryScreenRoute(categoryName = it))
+                    }
+                )
             }
             composable<Home.AllProductsByCategoryScreenRoute> {
                 val categoryName = it.toRoute<Home.AllProductsByCategoryScreenRoute>().categoryName

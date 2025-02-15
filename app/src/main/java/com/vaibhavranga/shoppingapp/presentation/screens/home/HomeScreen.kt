@@ -240,7 +240,7 @@ fun CategoriesBlock(
                                 .size(55.dp)
                                 .background(color = Color.White)
                                 .clip(shape = CircleShape)
-                                .border(width = 2.dp, color = Color.Gray, shape = CircleShape)
+                                .border(width = 2.dp, color = Pink, shape = CircleShape)
                                 .padding(8.dp)
                         )
                         Text(
