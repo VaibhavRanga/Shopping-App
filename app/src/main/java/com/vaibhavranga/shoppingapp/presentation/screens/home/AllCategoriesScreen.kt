@@ -3,6 +3,7 @@ package com.vaibhavranga.shoppingapp.presentation.screens.home
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -27,6 +28,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -71,8 +73,10 @@ fun AllCategoriesScreen(
                     style = MaterialTheme.typography.titleLarge
                 )
             }
-            Spacer(modifier = Modifier
-                .height(32.dp))
+            Spacer(
+                modifier = Modifier
+                    .height(32.dp)
+            )
             LazyVerticalGrid(
                 columns = GridCells.Fixed(3),
                 horizontalArrangement = Arrangement.spacedBy(space = 16.dp),
@@ -99,9 +103,14 @@ fun AllCategoriesScreen(
                         AsyncImage(
                             model = category.categoryImageUrl,
                             contentDescription = category.categoryName,
+                            colorFilter = ColorFilter.tint(
+                                color = if (isSystemInDarkTheme())
+                                    Color.White
+                                else
+                                    Color.Black
+                            ),
                             modifier = Modifier
                                 .size(55.dp)
-                                .background(color = Color.White)
                                 .clip(shape = CircleShape)
                                 .border(
                                     width = 2.dp,

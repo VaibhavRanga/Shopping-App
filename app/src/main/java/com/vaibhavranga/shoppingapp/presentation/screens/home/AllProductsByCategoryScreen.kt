@@ -39,7 +39,7 @@ import com.vaibhavranga.shoppingapp.domain.model.ProductModel
 import com.vaibhavranga.shoppingapp.presentation.common.CustomTextField
 import com.vaibhavranga.shoppingapp.presentation.screens.auth.showToast
 import com.vaibhavranga.shoppingapp.presentation.viewModel.ViewModel
-import com.vaibhavranga.shoppingapp.ui.theme.Gray
+import com.vaibhavranga.shoppingapp.ui.theme.Pink
 import com.vaibhavranga.shoppingapp.ui.theme.ShoppingAppTheme
 
 @Composable
@@ -123,7 +123,7 @@ fun ProductItem(
                 .width(120.dp)
                 .border(
                     width = 1.dp,
-                    color = Gray,
+                    color = Pink,
                     shape = RoundedCornerShape(16.dp)
                 )
                 .clip(shape = RoundedCornerShape(16.dp))

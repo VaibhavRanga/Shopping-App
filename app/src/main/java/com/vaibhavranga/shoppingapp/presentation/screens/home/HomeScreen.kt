@@ -1,8 +1,8 @@
 package com.vaibhavranga.shoppingapp.presentation.screens.home
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -40,6 +40,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -84,8 +85,7 @@ fun HomeScreen(
 
     Box(
         modifier = Modifier
-            .fillMaxSize()
-            .background(color = Color.White),
+            .fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
         Column(
@@ -93,7 +93,7 @@ fun HomeScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(scrollState)
-                .padding(horizontal = 16.dp)
+                .padding(16.dp)
         ) {
             SearchBarRow(
                 value = searchQuery,
@@ -236,11 +236,20 @@ fun CategoriesBlock(
                         AsyncImage(
                             model = category.categoryImageUrl,
                             contentDescription = category.categoryName,
+                            colorFilter = ColorFilter.tint(
+                                color = if (isSystemInDarkTheme())
+                                    Color.White
+                                else
+                                    Color.Black
+                            ),
                             modifier = Modifier
                                 .size(55.dp)
-                                .background(color = Color.White)
                                 .clip(shape = CircleShape)
-                                .border(width = 2.dp, color = Pink, shape = CircleShape)
+                                .border(
+                                    width = 2.dp,
+                                    color = Pink,
+                                    shape = CircleShape
+                                )
                                 .padding(8.dp)
                         )
                         Text(
@@ -301,7 +310,7 @@ fun FlashSaleBlock(
                                 .clip(shape = RoundedCornerShape(size = 16.dp))
                                 .border(
                                     width = 1.dp,
-                                    color = Gray,
+                                    color = Pink,
                                     shape = RoundedCornerShape(size = 16.dp)
                                 )
                         )
@@ -313,7 +322,7 @@ fun FlashSaleBlock(
                                 .height(120.dp)
                                 .border(
                                     width = 1.dp,
-                                    color = Gray,
+                                    color = Pink,
                                     shape = RoundedCornerShape(size = 16.dp)
                                 )
                                 .padding(8.dp)
