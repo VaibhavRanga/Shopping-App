@@ -29,7 +29,9 @@ sealed class Home {
     object AllCategoriesScreenRoute : Home()
 
     @Serializable
-    object AllProductsScreenRoute : Home()
+    data class AllProductsByCategoryScreenRoute(
+        val categoryName: String
+    ) : Home()
 
     @Serializable
     object WishListScreenRoute : Home()

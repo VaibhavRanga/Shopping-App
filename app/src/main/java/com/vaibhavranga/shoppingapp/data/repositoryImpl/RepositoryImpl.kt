@@ -116,4 +116,29 @@ class RepositoryImpl @Inject constructor(
             close()
         }
     }
+
+    override suspend fun getAllProductsByCategory(categoryName: String): Flow<ResultState<List<ProductModel>>> = callbackFlow {
+        trySend(ResultState.Loading)
+
+        try {
+            firebaseFirestore.collection(PRODUCT_PATH).whereEqualTo("category", categoryName).get()
+                .addOnSuccessListener {
+                    val products = it.documents.mapNotNull { document ->
+                        document.toObject(ProductModel::class.java)?.apply {
+                            productId = document.id
+                        }
+                    }
+                    trySend(ResultState.Success(data = products))
+                }
+                .addOnFailureListener {
+                    trySend(ResultState.Error(error = it.message.toString()))
+                }
+        } catch (e: Exception) {
+            trySend(ResultState.Error(error = e.message.toString()))
+        }
+
+        awaitClose {
+            close()
+        }
+    }
 }

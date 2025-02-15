@@ -10,8 +10,9 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
+import androidx.navigation.toRoute
 import com.vaibhavranga.shoppingapp.presentation.screens.home.AllCategoriesScreen
-import com.vaibhavranga.shoppingapp.presentation.screens.home.AllProductsScreen
+import com.vaibhavranga.shoppingapp.presentation.screens.home.AllProductsByCategoryScreen
 import com.vaibhavranga.shoppingapp.presentation.screens.home.CartScreen
 import com.vaibhavranga.shoppingapp.presentation.screens.home.HomeScreen
 import com.vaibhavranga.shoppingapp.presentation.screens.home.NotificationsScreen
@@ -39,6 +40,9 @@ fun HomeNavGraph(
                     onNotificationsButtonClick = {
                         homeNavController.navigate(Home.NotificationsScreenRoute)
                     },
+                    onCategoryClick = {
+                        homeNavController.navigate(Home.AllProductsByCategoryScreenRoute(categoryName = it))
+                    },
                     onSeeMoreCategoriesClick = {
                         homeNavController.navigate(Home.AllCategoriesScreenRoute)
                     }
@@ -50,8 +54,9 @@ fun HomeNavGraph(
             composable<Home.AllCategoriesScreenRoute> {
                 AllCategoriesScreen()
             }
-            composable<Home.AllProductsScreenRoute> {
-                AllProductsScreen()
+            composable<Home.AllProductsByCategoryScreenRoute> {
+                val categoryName = it.toRoute<Home.AllProductsByCategoryScreenRoute>().categoryName
+                AllProductsByCategoryScreen(categoryName = categoryName)
             }
             composable<Home.WishListScreenRoute> {
                 WishListScreen()

@@ -1,5 +1,6 @@
 package com.vaibhavranga.shoppingapp.presentation.viewModel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
@@ -9,6 +10,7 @@ import com.vaibhavranga.shoppingapp.domain.model.ProductModel
 import com.vaibhavranga.shoppingapp.domain.model.UserDataModel
 import com.vaibhavranga.shoppingapp.domain.useCase.CreateUserUseCase
 import com.vaibhavranga.shoppingapp.domain.useCase.GetAllCategoriesUseCase
+import com.vaibhavranga.shoppingapp.domain.useCase.GetAllProductsByCategoryUseCase
 import com.vaibhavranga.shoppingapp.domain.useCase.GetAllProductsUseCase
 import com.vaibhavranga.shoppingapp.domain.useCase.SignInWithEmailAndPasswordUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -25,12 +27,14 @@ class ViewModel @Inject constructor(
     private val signInWithEmailAndPasswordUseCase: SignInWithEmailAndPasswordUseCase,
     private val getAllCategoriesUseCase: GetAllCategoriesUseCase,
     private val getAllProductsUseCase: GetAllProductsUseCase,
+    private val getAllProductsByCategoryUseCase: GetAllProductsByCategoryUseCase,
     private val firebaseAuth: FirebaseAuth
 ) : ViewModel() {
     private val _createUserState = MutableStateFlow(CreateUserState())
     val createUserState = _createUserState.asStateFlow()
 
-    private val _signInWithEmailAndPasswordState = MutableStateFlow(SignInWithEmailAndPasswordState())
+    private val _signInWithEmailAndPasswordState =
+        MutableStateFlow(SignInWithEmailAndPasswordState())
     val signInWithEmailAndPasswordState = _signInWithEmailAndPasswordState.asStateFlow()
 
     private val _getAllCategoriesState = MutableStateFlow(GetAllCategoriesState())
@@ -39,13 +43,21 @@ class ViewModel @Inject constructor(
     private val _getAllProductsState = MutableStateFlow(GetAllProductsState())
     val getAllProductsState = _getAllProductsState.asStateFlow()
 
+    private val _getAllProductsByCategoryState = MutableStateFlow(GetAllProductsByCategory())
+    val getAllProductsByCategoryState = _getAllProductsByCategoryState.asStateFlow()
+
     fun createUser(userData: UserDataModel) {
         viewModelScope.launch(Dispatchers.IO) {
             createUserUseCase.createUserUseCase(userData = userData).collect { response ->
                 when (response) {
-                    is ResultState.Error -> _createUserState.value = CreateUserState(isLoading = false, error = response.error)
-                    ResultState.Loading -> _createUserState.value = CreateUserState(isLoading = true)
-                    is ResultState.Success -> _createUserState.value = CreateUserState(isLoading = false, data = response.data)
+                    is ResultState.Error -> _createUserState.value =
+                        CreateUserState(isLoading = false, error = response.error)
+
+                    ResultState.Loading -> _createUserState.value =
+                        CreateUserState(isLoading = true)
+
+                    is ResultState.Success -> _createUserState.value =
+                        CreateUserState(isLoading = false, data = response.data)
                 }
             }
         }
@@ -57,11 +69,19 @@ class ViewModel @Inject constructor(
 
     fun signInWithEmailAndPassword(email: String, password: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            signInWithEmailAndPasswordUseCase.signInWithEmailAndPassword(email = email, password = password).collect { response ->
+            signInWithEmailAndPasswordUseCase.signInWithEmailAndPassword(
+                email = email,
+                password = password
+            ).collect { response ->
                 when (response) {
-                    is ResultState.Error -> _signInWithEmailAndPasswordState.value = SignInWithEmailAndPasswordState(isLoading = false, error = response.error)
-                    ResultState.Loading -> _signInWithEmailAndPasswordState.value = SignInWithEmailAndPasswordState(isLoading = true)
-                    is ResultState.Success -> _signInWithEmailAndPasswordState.value = SignInWithEmailAndPasswordState(isLoading = false, data = response.data)
+                    is ResultState.Error -> _signInWithEmailAndPasswordState.value =
+                        SignInWithEmailAndPasswordState(isLoading = false, error = response.error)
+
+                    ResultState.Loading -> _signInWithEmailAndPasswordState.value =
+                        SignInWithEmailAndPasswordState(isLoading = true)
+
+                    is ResultState.Success -> _signInWithEmailAndPasswordState.value =
+                        SignInWithEmailAndPasswordState(isLoading = false, data = response.data)
                 }
             }
         }
@@ -75,9 +95,14 @@ class ViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             getAllCategoriesUseCase.getAllCategories().collect { response ->
                 when (response) {
-                    is ResultState.Error -> _getAllCategoriesState.value = GetAllCategoriesState(isLoading = false, error = response.error)
-                    ResultState.Loading -> _getAllCategoriesState.value = GetAllCategoriesState(isLoading = true)
-                    is ResultState.Success -> _getAllCategoriesState.value = GetAllCategoriesState(isLoading = false, data = response.data)
+                    is ResultState.Error -> _getAllCategoriesState.value =
+                        GetAllCategoriesState(isLoading = false, error = response.error)
+
+                    ResultState.Loading -> _getAllCategoriesState.value =
+                        GetAllCategoriesState(isLoading = true)
+
+                    is ResultState.Success -> _getAllCategoriesState.value =
+                        GetAllCategoriesState(isLoading = false, data = response.data)
                 }
             }
         }
@@ -91,9 +116,14 @@ class ViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             getAllProductsUseCase.getAllProducts().collect { response ->
                 when (response) {
-                    is ResultState.Error -> _getAllProductsState.value = GetAllProductsState(isLoading = false, error = response.error)
-                    ResultState.Loading -> _getAllProductsState.value = GetAllProductsState(isLoading = true)
-                    is ResultState.Success -> _getAllProductsState.value = GetAllProductsState(isLoading = false, data = response.data)
+                    is ResultState.Error -> _getAllProductsState.value =
+                        GetAllProductsState(isLoading = false, error = response.error)
+
+                    ResultState.Loading -> _getAllProductsState.value =
+                        GetAllProductsState(isLoading = true)
+
+                    is ResultState.Success -> _getAllProductsState.value =
+                        GetAllProductsState(isLoading = false, data = response.data)
                 }
             }
         }
@@ -101,6 +131,30 @@ class ViewModel @Inject constructor(
 
     fun clearGetAllProductsState() {
         _getAllProductsState.value = GetAllProductsState()
+    }
+
+    fun getAllProductsByCategory(categoryName: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            getAllProductsByCategoryUseCase.invoke(categoryName = categoryName)
+                .collect { response ->
+                    when (response) {
+                        is ResultState.Error -> _getAllProductsByCategoryState.value =
+                            GetAllProductsByCategory(isLoading = false, error = response.error)
+
+                        ResultState.Loading -> _getAllProductsByCategoryState.value =
+                            GetAllProductsByCategory(isLoading = true)
+
+                        is ResultState.Success -> {
+                            _getAllProductsByCategoryState.value =
+                                GetAllProductsByCategory(isLoading = false, data = response.data)
+                        }
+                    }
+                }
+        }
+    }
+
+    fun clearGetAllProductsByCategoryState() {
+        _getAllProductsByCategoryState.value = GetAllProductsByCategory()
     }
 
     fun signOut() {
@@ -127,6 +181,12 @@ data class GetAllCategoriesState(
 )
 
 data class GetAllProductsState(
+    val isLoading: Boolean = false,
+    val error: String? = null,
+    val data: List<ProductModel>? = null
+)
+
+data class GetAllProductsByCategory(
     val isLoading: Boolean = false,
     val error: String? = null,
     val data: List<ProductModel>? = null
