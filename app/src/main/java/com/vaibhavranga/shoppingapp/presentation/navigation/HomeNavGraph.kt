@@ -37,9 +37,6 @@ fun HomeNavGraph(
         navigation<Graph.HomeGraph>(startDestination = Home.HomeScreenRoute) {
             composable<Home.HomeScreenRoute> {
                 HomeScreen(
-                    onNotificationsButtonClick = {
-                        homeNavController.navigate(Home.NotificationsScreenRoute)
-                    },
                     onCategoryClick = {
                         homeNavController.navigate(Home.AllProductsByCategoryScreenRoute(categoryName = it))
                     },

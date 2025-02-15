@@ -25,11 +25,14 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -61,9 +64,9 @@ import com.vaibhavranga.shoppingapp.ui.theme.Gray
 import com.vaibhavranga.shoppingapp.ui.theme.Pink
 import com.vaibhavranga.shoppingapp.ui.theme.ShoppingAppTheme
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    onNotificationsButtonClick: () -> Unit,
     onCategoryClick: (categoryName: String) -> Unit,
     onSeeMoreCategoriesClick: () -> Unit,
     viewModel: ViewModel = hiltViewModel()
@@ -75,6 +78,8 @@ fun HomeScreen(
     val scrollState = rememberScrollState()
     var isShowingCategories by remember { mutableStateOf(false) }
     var isShowingProducts by remember { mutableStateOf(false) }
+    val sheetState = rememberModalBottomSheetState()
+    var isSheetShowing by remember { mutableStateOf(false) }
 
     LaunchedEffect(key1 = Unit) {
         viewModel.getAllCategories()
@@ -98,7 +103,9 @@ fun HomeScreen(
             SearchBarRow(
                 value = searchQuery,
                 onSearchValueChange = { searchQuery = it },
-                onNotificationsButtonClick = onNotificationsButtonClick,
+                onNotificationsButtonClick = {
+                    isSheetShowing = true
+                },
                 modifier = Modifier
                     .fillMaxWidth()
             )
@@ -119,6 +126,21 @@ fun HomeScreen(
                 modifier = Modifier
                     .fillMaxWidth()
             )
+        }
+        if (isSheetShowing) {
+            ModalBottomSheet(
+                sheetState = sheetState,
+                onDismissRequest = {
+                    isSheetShowing = false
+                }
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                ) {
+                    Text(text = "Notifications")
+                }
+            }
         }
         when {
             allCategories.value.isLoading -> CircularProgressIndicator()
