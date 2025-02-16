@@ -63,7 +63,6 @@ fun SignInScreen(
         contentAlignment = Alignment.Center,
         modifier = Modifier
             .fillMaxSize()
-            .padding(8.dp)
     ) {
         Canvas(
             modifier = Modifier
@@ -213,11 +212,13 @@ fun MainSignIn(
                 .fillMaxWidth()
         ) {
             HorizontalDivider(
+                color = Pink,
                 modifier = Modifier
                     .weight(1f)
             )
             Text(text = "OR")
             HorizontalDivider(
+                color = Pink,
                 modifier = Modifier
                     .weight(1f)
             )

@@ -31,6 +31,9 @@ fun NavGraphBuilder.authNavGraph(rootNavController: NavHostController) {
                             inclusive = true
                         }
                     }
+                },
+                onSignInButtonClick = {
+                    rootNavController.navigateUp()
                 }
             )
         }
