@@ -23,6 +23,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -62,98 +63,102 @@ fun SignUpScreen(
     val context = LocalContext.current
     val verticalScrollState = rememberScrollState()
 
-    Box(
-        contentAlignment = Alignment.Center,
-        modifier = Modifier
-            .fillMaxSize()
+    Surface(
+        color = MaterialTheme.colorScheme.background
     ) {
-        Canvas(
-            modifier = Modifier
-                .size(200.dp)
-                .align(alignment = Alignment.TopEnd)
-        ) {
-            drawCircle(
-                color = Pink,
-                radius = size.width,
-                center = Offset(
-                    x = size.width.times(0.6f),
-                    y = size.height.times(-0.5f)
-                )
-            )
-        }
-        Canvas(
-            modifier = Modifier
-                .size(100.dp)
-                .align(alignment = Alignment.BottomStart)
-        ) {
-            drawCircle(
-                color = Pink,
-                radius = size.width,
-                center = Offset(
-                    x = size.width.times(0.2f),
-                    y = size.height.times(1.4f)
-                )
-            )
-        }
-        MainSignUp(
-            firstName = firstName,
-            onFirstNameValueChange = {
-                firstName = it
-            },
-            lastName = lastName,
-            onLastNameValueChange = {
-                lastName = it
-            },
-            email = email,
-            onEmailValueChange = {
-                email = it
-            },
-            password = password,
-            onPasswordValueChange = {
-                password = it
-            },
-            confirmPassword = confirmPassword,
-            onConfirmPasswordChange = {
-                confirmPassword = it
-            },
-            onSignInButtonClick = onSignInButtonClick,
-            onSignUpButtonClick = {
-                if (firstName.isNotBlank()
-                    && lastName.isNotBlank()
-                    && email.isNotBlank()
-                    && password.isNotBlank()
-                    && confirmPassword.isNotBlank()
-                ) {
-                    if (password == confirmPassword) {
-                        val userData = UserDataModel(
-                            firstName = firstName,
-                            lastName = lastName,
-                            email = email,
-                            password = password
-                        )
-                        viewModel.createUser(userData = userData)
-                    } else {
-                        Toast.makeText(context, "Password and confirm password are different", Toast.LENGTH_SHORT).show()
-                    }
-                } else {
-                    Toast.makeText(context, "Please enter all details", Toast.LENGTH_SHORT).show()
-                }
-            },
+        Box(
+            contentAlignment = Alignment.Center,
             modifier = Modifier
                 .fillMaxSize()
-                .verticalScroll(verticalScrollState)
-                .padding(16.dp)
-        )
-        when {
-            createUser.value.isLoading -> CircularProgressIndicator()
-            createUser.value.error != null -> {
-                Toast.makeText(context, createUser.value.error.toString(), Toast.LENGTH_SHORT)
-                    .show()
-                viewModel.clearCreateUserState()
+        ) {
+            Canvas(
+                modifier = Modifier
+                    .size(200.dp)
+                    .align(alignment = Alignment.TopEnd)
+            ) {
+                drawCircle(
+                    color = Pink,
+                    radius = size.width,
+                    center = Offset(
+                        x = size.width.times(0.6f),
+                        y = size.height.times(-0.5f)
+                    )
+                )
             }
+            Canvas(
+                modifier = Modifier
+                    .size(100.dp)
+                    .align(alignment = Alignment.BottomStart)
+            ) {
+                drawCircle(
+                    color = Pink,
+                    radius = size.width,
+                    center = Offset(
+                        x = size.width.times(0.2f),
+                        y = size.height.times(1.4f)
+                    )
+                )
+            }
+            MainSignUp(
+                firstName = firstName,
+                onFirstNameValueChange = {
+                    firstName = it
+                },
+                lastName = lastName,
+                onLastNameValueChange = {
+                    lastName = it
+                },
+                email = email,
+                onEmailValueChange = {
+                    email = it
+                },
+                password = password,
+                onPasswordValueChange = {
+                    password = it
+                },
+                confirmPassword = confirmPassword,
+                onConfirmPasswordChange = {
+                    confirmPassword = it
+                },
+                onSignInButtonClick = onSignInButtonClick,
+                onSignUpButtonClick = {
+                    if (firstName.isNotBlank()
+                        && lastName.isNotBlank()
+                        && email.isNotBlank()
+                        && password.isNotBlank()
+                        && confirmPassword.isNotBlank()
+                    ) {
+                        if (password == confirmPassword) {
+                            val userData = UserDataModel(
+                                firstName = firstName,
+                                lastName = lastName,
+                                email = email,
+                                password = password
+                            )
+                            viewModel.createUser(userData = userData)
+                        } else {
+                            Toast.makeText(context, "Password and confirm password are different", Toast.LENGTH_SHORT).show()
+                        }
+                    } else {
+                        Toast.makeText(context, "Please enter all details", Toast.LENGTH_SHORT).show()
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(verticalScrollState)
+                    .padding(16.dp)
+            )
+            when {
+                createUser.value.isLoading -> CircularProgressIndicator()
+                createUser.value.error != null -> {
+                    Toast.makeText(context, createUser.value.error.toString(), Toast.LENGTH_SHORT)
+                        .show()
+                    viewModel.clearCreateUserState()
+                }
 
-            createUser.value.data != null -> {
-                onSignUpSuccessful()
+                createUser.value.data != null -> {
+                    onSignUpSuccessful()
+                }
             }
         }
     }
@@ -274,7 +279,7 @@ fun MainSignUp(
             )
         }
         Card(
-            colors = CardDefaults.cardColors(containerColor = Color.White),
+            colors = CardDefaults.cardColors(containerColor = Color.Transparent),
             modifier = Modifier
                 .fillMaxWidth()
                 .height(46.dp)

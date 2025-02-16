@@ -3,6 +3,7 @@ package com.vaibhavranga.shoppingapp.presentation.screens.auth
 import android.widget.Toast
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -23,6 +24,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -59,69 +61,74 @@ fun SignInScreen(
     val context = LocalContext.current
     val verticalScrollState = rememberScrollState()
 
-    Box(
-        contentAlignment = Alignment.Center,
-        modifier = Modifier
-            .fillMaxSize()
+    Surface(
+        color = MaterialTheme.colorScheme.background
     ) {
-        Canvas(
-            modifier = Modifier
-                .size(200.dp)
-                .align(alignment = Alignment.TopEnd)
-        ) {
-            drawCircle(
-                color = Pink,
-                radius = size.width,
-                center = Offset(
-                    x = size.width.times(0.6f),
-                    y = size.height.times(-0.5f)
-                )
-            )
-        }
-        Canvas(
-            modifier = Modifier
-                .size(100.dp)
-                .align(alignment = Alignment.BottomStart)
-        ) {
-            drawCircle(
-                color = Pink,
-                radius = size.width,
-                center = Offset(
-                    x = size.width.times(0.2f),
-                    y = size.height.times(1.4f)
-                )
-            )
-        }
-        MainSignIn(
-            email = email,
-            onEmailValueChange = {
-                email = it
-            },
-            password = password,
-            onPasswordValueChange = {
-                password = it
-            },
-            onSignInButtonClick = {
-                viewModel.signInWithEmailAndPassword(
-                    email = email,
-                    password = password
-                )
-            },
-            onSignUpButtonClick = onSignUpButtonClick,
+        Box(
+            contentAlignment = Alignment.Center,
             modifier = Modifier
                 .fillMaxSize()
-                .verticalScroll(verticalScrollState)
-                .padding(16.dp)
-        )
-        when {
-            signInWithEmailAndPassword.value.isLoading -> CircularProgressIndicator()
-            signInWithEmailAndPassword.value.error != null -> {
-                Toast.makeText(context, signInWithEmailAndPassword.value.error.toString(), Toast.LENGTH_SHORT).show()
-                viewModel.clearSignInWithEmailAndPasswordState()
+                .background(color = MaterialTheme.colorScheme.background)
+        ) {
+            Canvas(
+                modifier = Modifier
+                    .size(200.dp)
+                    .align(alignment = Alignment.TopEnd)
+            ) {
+                drawCircle(
+                    color = Pink,
+                    radius = size.width,
+                    center = Offset(
+                        x = size.width.times(0.6f),
+                        y = size.height.times(-0.5f)
+                    )
+                )
             }
+            Canvas(
+                modifier = Modifier
+                    .size(100.dp)
+                    .align(alignment = Alignment.BottomStart)
+            ) {
+                drawCircle(
+                    color = Pink,
+                    radius = size.width,
+                    center = Offset(
+                        x = size.width.times(0.2f),
+                        y = size.height.times(1.4f)
+                    )
+                )
+            }
+            MainSignIn(
+                email = email,
+                onEmailValueChange = {
+                    email = it
+                },
+                password = password,
+                onPasswordValueChange = {
+                    password = it
+                },
+                onSignInButtonClick = {
+                    viewModel.signInWithEmailAndPassword(
+                        email = email,
+                        password = password
+                    )
+                },
+                onSignUpButtonClick = onSignUpButtonClick,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(verticalScrollState)
+                    .padding(16.dp)
+            )
+            when {
+                signInWithEmailAndPassword.value.isLoading -> CircularProgressIndicator()
+                signInWithEmailAndPassword.value.error != null -> {
+                    Toast.makeText(context, signInWithEmailAndPassword.value.error.toString(), Toast.LENGTH_SHORT).show()
+                    viewModel.clearSignInWithEmailAndPasswordState()
+                }
 
-            signInWithEmailAndPassword.value.data != null -> {
-                onSignInWithEmailAndPasswordSuccess()
+                signInWithEmailAndPassword.value.data != null -> {
+                    onSignInWithEmailAndPasswordSuccess()
+                }
             }
         }
     }
@@ -224,7 +231,7 @@ fun MainSignIn(
             )
         }
         Card(
-            colors = CardDefaults.cardColors(containerColor = Color.White),
+            colors = CardDefaults.cardColors(containerColor = Color.Transparent),
             modifier = Modifier
                 .fillMaxWidth()
                 .height(46.dp)

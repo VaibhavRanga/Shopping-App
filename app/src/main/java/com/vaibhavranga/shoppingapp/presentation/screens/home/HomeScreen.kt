@@ -31,6 +31,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -89,81 +90,85 @@ fun HomeScreen(
         viewModel.getAllProducts()
     }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize(),
-        contentAlignment = Alignment.Center
+    Surface(
+        color = MaterialTheme.colorScheme.background
     ) {
-        Column(
-            verticalArrangement = Arrangement.spacedBy(space = 16.dp),
+        Box(
             modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(scrollState)
-                .padding(16.dp)
+                .fillMaxSize(),
+            contentAlignment = Alignment.Center
         ) {
-            SearchBarRow(
-                value = searchQuery,
-                onSearchValueChange = { searchQuery = it },
-                onNotificationsButtonClick = {
-                    isSheetShowing = true
-                },
+            Column(
+                verticalArrangement = Arrangement.spacedBy(space = 16.dp),
                 modifier = Modifier
-                    .fillMaxWidth()
-            )
-            CategoriesBlock(
-                isShowingCategories = isShowingCategories,
-                categories = allCategories.value.data ?: emptyList(),
-                onCategoryClick = {
-                    onCategoryClick(it)
-                },
-                onSeeMoreCategoriesClick = onSeeMoreCategoriesClick,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .wrapContentHeight()
-            )
-            FlashSaleBlock(
-                isShowingProducts = isShowingProducts,
-                products = allProducts.value.data ?: emptyList(),
-                onProductClick = onProductClick,
-                modifier = Modifier
-                    .fillMaxWidth()
-            )
-        }
-        if (isSheetShowing) {
-            ModalBottomSheet(
-                sheetState = sheetState,
-                onDismissRequest = {
-                    isSheetShowing = false
-                }
+                    .fillMaxSize()
+                    .verticalScroll(scrollState)
+                    .padding(16.dp)
             ) {
-                Box(
+                SearchBarRow(
+                    value = searchQuery,
+                    onSearchValueChange = { searchQuery = it },
+                    onNotificationsButtonClick = {
+                        isSheetShowing = true
+                    },
                     modifier = Modifier
-                        .fillMaxSize()
+                        .fillMaxWidth()
+                )
+                CategoriesBlock(
+                    isShowingCategories = isShowingCategories,
+                    categories = allCategories.value.data ?: emptyList(),
+                    onCategoryClick = {
+                        onCategoryClick(it)
+                    },
+                    onSeeMoreCategoriesClick = onSeeMoreCategoriesClick,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight()
+                )
+                FlashSaleBlock(
+                    isShowingProducts = isShowingProducts,
+                    products = allProducts.value.data ?: emptyList(),
+                    onProductClick = onProductClick,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                )
+            }
+            if (isSheetShowing) {
+                ModalBottomSheet(
+                    sheetState = sheetState,
+                    onDismissRequest = {
+                        isSheetShowing = false
+                    }
                 ) {
-                    Text(text = "Notifications")
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                    ) {
+                        Text(text = "Notifications")
+                    }
                 }
             }
-        }
-        when {
-            allCategories.value.isLoading -> CircularProgressIndicator()
-            allCategories.value.error != null -> {
-                Toast.makeText(context, allCategories.value.error.toString(), Toast.LENGTH_SHORT).show()
-                viewModel.clearGetAllCategoriesState()
-            }
+            when {
+                allCategories.value.isLoading -> CircularProgressIndicator()
+                allCategories.value.error != null -> {
+                    Toast.makeText(context, allCategories.value.error.toString(), Toast.LENGTH_SHORT).show()
+                    viewModel.clearGetAllCategoriesState()
+                }
 
-            allCategories.value.data != null -> {
-                isShowingCategories = true
+                allCategories.value.data != null -> {
+                    isShowingCategories = true
+                }
             }
-        }
-        when {
-            allProducts.value.isLoading -> CircularProgressIndicator()
-            allProducts.value.error != null -> {
-                Toast.makeText(context, allProducts.value.error.toString(), Toast.LENGTH_SHORT).show()
-                viewModel.clearGetAllProductsState()
-            }
+            when {
+                allProducts.value.isLoading -> CircularProgressIndicator()
+                allProducts.value.error != null -> {
+                    Toast.makeText(context, allProducts.value.error.toString(), Toast.LENGTH_SHORT).show()
+                    viewModel.clearGetAllProductsState()
+                }
 
-            allProducts.value.data != null -> {
-                isShowingProducts = true
+                allProducts.value.data != null -> {
+                    isShowingProducts = true
+                }
             }
         }
     }
