@@ -2,8 +2,6 @@ package com.vaibhavranga.shoppingapp.presentation.common
 
 import androidx.compose.foundation.border
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -20,7 +18,7 @@ import com.vaibhavranga.shoppingapp.ui.theme.Pink
 import com.vaibhavranga.shoppingapp.ui.theme.ShoppingAppTheme
 
 @Composable
-fun CustomTextField(
+fun CustomTextFieldWithLeadingIcon(
     value: String,
     onValueChange: (String) -> Unit,
     placeholder: String,
@@ -56,6 +54,37 @@ fun CustomTextField(
     )
 }
 
+@Composable
+fun CustomTextField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    label: String,
+    modifier: Modifier = Modifier
+) {
+    TextField(
+        value = value,
+        onValueChange = { onValueChange(it) },
+        label = { Text(text = label, color = Gray) },
+        colors = TextFieldDefaults.colors(
+            unfocusedIndicatorColor = Color.Transparent,
+            focusedIndicatorColor = Color.Transparent,
+            unfocusedContainerColor = Color.Transparent,
+            focusedContainerColor = Color.Transparent,
+            unfocusedLeadingIconColor = Gray,
+            focusedLeadingIconColor = Gray,
+            unfocusedTextColor = Gray,
+            focusedTextColor = Gray,
+            cursorColor = Pink
+        ),
+        modifier = modifier
+            .border(
+                width = 2.dp,
+                color = Pink,
+                shape = RoundedCornerShape(16.dp)
+            )
+    )
+}
+
 @Preview(showSystemUi = true, device = Devices.PIXEL_7)
 @Composable
 private fun CustomTextFieldPreview() {
@@ -63,8 +92,7 @@ private fun CustomTextFieldPreview() {
         CustomTextField(
             value = "Hello",
             onValueChange = {},
-            placeholder = "Name",
-            leadingIcon = Icons.Default.Search
+            label = "Enter your name"
         )
     }
 }

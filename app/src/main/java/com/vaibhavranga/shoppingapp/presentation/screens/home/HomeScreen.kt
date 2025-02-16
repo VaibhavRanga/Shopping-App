@@ -58,7 +58,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.vaibhavranga.shoppingapp.domain.model.CategoryModel
 import com.vaibhavranga.shoppingapp.domain.model.ProductModel
-import com.vaibhavranga.shoppingapp.presentation.common.CustomTextField
+import com.vaibhavranga.shoppingapp.presentation.common.CustomTextFieldWithLeadingIcon
 import com.vaibhavranga.shoppingapp.presentation.viewModel.ViewModel
 import com.vaibhavranga.shoppingapp.ui.theme.Gray
 import com.vaibhavranga.shoppingapp.ui.theme.Pink
@@ -180,7 +180,7 @@ fun SearchBarRow(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
     ) {
-        CustomTextField(
+        CustomTextFieldWithLeadingIcon(
             value = value,
             onValueChange = onSearchValueChange,
             placeholder = "Search",

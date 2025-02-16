@@ -38,7 +38,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.vaibhavranga.shoppingapp.domain.model.ProductModel
-import com.vaibhavranga.shoppingapp.presentation.common.CustomTextField
+import com.vaibhavranga.shoppingapp.presentation.common.CustomTextFieldWithLeadingIcon
 import com.vaibhavranga.shoppingapp.presentation.viewModel.ViewModel
 import com.vaibhavranga.shoppingapp.ui.theme.Pink
 import com.vaibhavranga.shoppingapp.ui.theme.ShoppingAppTheme
@@ -68,7 +68,7 @@ fun AllProductsByCategoryScreen(
                 .fillMaxSize()
                 .padding(16.dp)
         ) {
-            CustomTextField(
+            CustomTextFieldWithLeadingIcon(
                 value = searchQuery,
                 onValueChange = {
                     searchQuery = it
