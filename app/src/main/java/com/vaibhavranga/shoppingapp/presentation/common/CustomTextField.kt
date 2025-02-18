@@ -2,6 +2,7 @@ package com.vaibhavranga.shoppingapp.presentation.common
 
 import androidx.compose.foundation.border
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -10,6 +11,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -59,6 +62,8 @@ fun CustomTextField(
     value: String,
     onValueChange: (String) -> Unit,
     label: String,
+    visualTransformation: VisualTransformation = VisualTransformation.None,
+    keyboardType: KeyboardType = KeyboardType.Text,
     modifier: Modifier = Modifier
 ) {
     TextField(
@@ -75,6 +80,11 @@ fun CustomTextField(
             unfocusedTextColor = Gray,
             focusedTextColor = Gray,
             cursorColor = Pink
+        ),
+        maxLines = 1,
+        visualTransformation = visualTransformation,
+        keyboardOptions = KeyboardOptions(
+            keyboardType = keyboardType
         ),
         modifier = modifier
             .border(

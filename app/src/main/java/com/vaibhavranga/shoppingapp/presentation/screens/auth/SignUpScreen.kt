@@ -37,6 +37,8 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -128,12 +130,12 @@ fun SignUpScreen(
                         && password.isNotBlank()
                         && confirmPassword.isNotBlank()
                     ) {
-                        if (password == confirmPassword) {
+                        if (password.trim() == confirmPassword.trim()) {
                             val userData = UserDataModel(
-                                firstName = firstName,
-                                lastName = lastName,
-                                email = email,
-                                password = password
+                                firstName = firstName.trim(),
+                                lastName = lastName.trim(),
+                                email = email.trim(),
+                                password = password.trim()
                             )
                             viewModel.createUser(userData = userData)
                         } else {
@@ -215,6 +217,7 @@ fun MainSignUp(
             value = email,
             onValueChange = onEmailValueChange,
             label = "Email",
+            keyboardType = KeyboardType.Email,
             modifier = Modifier
                 .fillMaxWidth()
         )
@@ -222,6 +225,7 @@ fun MainSignUp(
             value = password,
             onValueChange = onPasswordValueChange,
             label = "Create Password",
+            visualTransformation = PasswordVisualTransformation(),
             modifier = Modifier
                 .fillMaxWidth()
         )
@@ -229,6 +233,7 @@ fun MainSignUp(
             value = confirmPassword,
             onValueChange = onConfirmPasswordChange,
             label = "Confirm Password",
+            visualTransformation = PasswordVisualTransformation(),
             modifier = Modifier
                 .fillMaxWidth()
         )
