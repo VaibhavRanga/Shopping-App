@@ -3,6 +3,7 @@ package com.vaibhavranga.shoppingapp.presentation.screens.home
 import android.content.res.Configuration
 import android.widget.Toast
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -17,7 +18,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -39,8 +45,11 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.vaibhavranga.shoppingapp.domain.model.ProductModel
+import com.vaibhavranga.shoppingapp.domain.model.WishListModel
 import com.vaibhavranga.shoppingapp.presentation.common.StarRatingBar
 import com.vaibhavranga.shoppingapp.presentation.viewModel.ViewModel
+import com.vaibhavranga.shoppingapp.ui.theme.Gray
+import com.vaibhavranga.shoppingapp.ui.theme.Pink
 import com.vaibhavranga.shoppingapp.ui.theme.ShoppingAppTheme
 
 @Composable
@@ -49,6 +58,7 @@ fun ProductScreen(
     viewModel: ViewModel = hiltViewModel()
 ) {
     val productState by viewModel.getProductByIdState.collectAsStateWithLifecycle()
+    val wishListState by viewModel.addToWishListState.collectAsStateWithLifecycle()
     var isShowingProduct by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
@@ -63,7 +73,10 @@ fun ProductScreen(
     ) {
         if (isShowingProduct) {
             ProductImage(
-                product = productState.data ?: ProductModel()
+                product = productState.data ?: ProductModel(),
+                onAddToWishListClick = {
+                    viewModel.addToWishList(wishListModel = it)
+                }
             )
         }
         when {
@@ -77,12 +90,24 @@ fun ProductScreen(
                 isShowingProduct = true
             }
         }
+        when {
+            wishListState.isLoading -> CircularProgressIndicator()
+            wishListState.error != null -> {
+                Toast.makeText(context, wishListState.error, Toast.LENGTH_SHORT).show()
+                viewModel.clearAddToWishListState()
+            }
+            wishListState.data != null -> {
+                Toast.makeText(context, wishListState.data, Toast.LENGTH_SHORT).show()
+                viewModel.clearAddToWishListState()
+            }
+        }
     }
 }
 
 @Composable
 fun ProductImage(
     product: ProductModel,
+    onAddToWishListClick: (wishListItem: WishListModel) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val verticalScrollState = rememberScrollState()
@@ -168,6 +193,65 @@ fun ProductImage(
                     .height(8.dp)
             )
             Text(text = product.description)
+            Spacer(
+                modifier = Modifier
+                    .height(8.dp)
+            )
+            Button(
+                onClick = {},
+                shape = RoundedCornerShape(16.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Pink),
+                modifier = Modifier
+                    .fillMaxWidth()
+            ) {
+                Text(text = "Buy now")
+            }
+            Spacer(
+                modifier = Modifier
+                    .height(8.dp)
+            )
+            Button(
+                onClick = {},
+                shape = RoundedCornerShape(16.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Gray),
+                modifier = Modifier
+                    .fillMaxWidth()
+            ) {
+                Text(text = "Add to Cart")
+            }
+            Spacer(
+                modifier = Modifier
+                    .height(8.dp)
+            )
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(
+                    space = 8.dp,
+                    alignment = Alignment.CenterHorizontally
+                ),
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.FavoriteBorder,
+                    contentDescription = "Add to wishlist",
+                    tint = Pink,
+                    modifier = Modifier
+                        .clickable {
+
+                        }
+                )
+                Text(text = "Add to Wishlist",
+                    style = MaterialTheme.typography.labelLarge.copy(color = Pink),
+                    modifier = Modifier
+                        .clickable {
+                            val wishListItem = WishListModel(
+                                productId = product.productId
+                            )
+                            onAddToWishListClick(wishListItem)
+                        }
+                )
+            }
         }
     }
 }
@@ -188,7 +272,8 @@ private fun ProductDisplayPreview() {
                 category = "",
                 date = System.currentTimeMillis(),
                 availableUnits = 30
-            )
+            ),
+            onAddToWishListClick = {}
         )
     }
 }

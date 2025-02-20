@@ -71,13 +71,17 @@ fun HomeNavGraph(
                 val categoryName = it.toRoute<Home.AllProductsByCategoryScreenRoute>().categoryName
                 AllProductsByCategoryScreen(
                     categoryName = categoryName,
-                    onProductClick = { product ->
-                        homeNavController.navigate(Home.ProductScreenRoute(product))
+                    onProductClick = { productId ->
+                        homeNavController.navigate(Home.ProductScreenRoute(productId = productId))
                     }
                 )
             }
             composable<Home.WishListScreenRoute> {
-                WishListScreen()
+                WishListScreen(
+                    onProductClick = { productId ->
+                        homeNavController.navigate(Home.ProductScreenRoute(productId = productId))
+                    }
+                )
             }
             composable<Home.CartScreenRoute> {
                 CartScreen()

@@ -1,14 +1,18 @@
 package com.vaibhavranga.shoppingapp.data.repositoryImpl
 
+import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.vaibhavranga.shoppingapp.common.CATEGORY_PATH
 import com.vaibhavranga.shoppingapp.common.PRODUCT_PATH
 import com.vaibhavranga.shoppingapp.common.ResultState
 import com.vaibhavranga.shoppingapp.common.USER_PATH
+import com.vaibhavranga.shoppingapp.common.WISHLISTS_PATH
+import com.vaibhavranga.shoppingapp.common.WISHLIST_USER_ID_PATH
 import com.vaibhavranga.shoppingapp.domain.model.CategoryModel
 import com.vaibhavranga.shoppingapp.domain.model.ProductModel
 import com.vaibhavranga.shoppingapp.domain.model.UserDataModel
+import com.vaibhavranga.shoppingapp.domain.model.WishListModel
 import com.vaibhavranga.shoppingapp.domain.repository.Repository
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -117,51 +121,110 @@ class RepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getAllProductsByCategory(categoryName: String): Flow<ResultState<List<ProductModel>>> = callbackFlow {
-        trySend(ResultState.Loading)
+    override suspend fun getAllProductsByCategory(categoryName: String): Flow<ResultState<List<ProductModel>>> =
+        callbackFlow {
+            trySend(ResultState.Loading)
 
-        try {
-            firebaseFirestore.collection(PRODUCT_PATH).whereEqualTo("category", categoryName).get()
-                .addOnSuccessListener {
-                    val products = it.documents.mapNotNull { document ->
-                        document.toObject(ProductModel::class.java)?.apply {
-                            productId = document.id
+            try {
+                firebaseFirestore.collection(PRODUCT_PATH).whereEqualTo("category", categoryName)
+                    .get()
+                    .addOnSuccessListener {
+                        val products = it.documents.mapNotNull { document ->
+                            document.toObject(ProductModel::class.java)?.apply {
+                                productId = document.id
+                            }
+                        }
+                        trySend(ResultState.Success(data = products))
+                    }
+                    .addOnFailureListener {
+                        trySend(ResultState.Error(error = it.message.toString()))
+                    }
+            } catch (e: Exception) {
+                trySend(ResultState.Error(error = e.message.toString()))
+            }
+
+            awaitClose {
+                close()
+            }
+        }
+
+    override suspend fun getProductById(productId: String): Flow<ResultState<ProductModel>> =
+        callbackFlow {
+            trySend(ResultState.Loading)
+
+            try {
+                firebaseFirestore.collection(PRODUCT_PATH).document(productId).get()
+                    .addOnSuccessListener { document ->
+                        val product = document.toObject(ProductModel::class.java)
+                        product?.productId = productId
+                        product?.let {
+                            trySend(ResultState.Success(data = it))
                         }
                     }
-                    trySend(ResultState.Success(data = products))
-                }
-                .addOnFailureListener {
-                    trySend(ResultState.Error(error = it.message.toString()))
-                }
-        } catch (e: Exception) {
-            trySend(ResultState.Error(error = e.message.toString()))
-        }
-
-        awaitClose {
-            close()
-        }
-    }
-
-    override suspend fun getProductById(productId: String): Flow<ResultState<ProductModel>> = callbackFlow {
-        trySend(ResultState.Loading)
-
-        try {
-            firebaseFirestore.collection(PRODUCT_PATH).document(productId).get()
-                .addOnSuccessListener { document ->
-                    val product = document.toObject(ProductModel::class.java)
-                    product?.let {
-                        trySend(ResultState.Success(data = it))
+                    .addOnFailureListener {
+                        trySend(ResultState.Error(error = it.message.toString()))
                     }
-                }
-                .addOnFailureListener {
-                    trySend(ResultState.Error(error = it.message.toString()))
-                }
-        } catch(e: Exception) {
-            trySend(ResultState.Error(error = e.message.toString()))
+            } catch (e: Exception) {
+                trySend(ResultState.Error(error = e.message.toString()))
+            }
+
+            awaitClose {
+                close()
+            }
         }
 
-        awaitClose {
-            close()
+    override suspend fun addToWishList(wishListModel: WishListModel): Flow<ResultState<String>> =
+        callbackFlow {
+            trySend(ResultState.Loading)
+
+            try {
+                firebaseFirestore
+                    .collection(WISHLISTS_PATH)
+                    .document(firebaseAuth.currentUser!!.uid)
+                    .collection(WISHLIST_USER_ID_PATH)
+                    .add(wishListModel)
+                    .addOnSuccessListener {
+                        trySend(ResultState.Success(data = "Added to wishlist"))
+                    }
+                    .addOnFailureListener {
+                        trySend(ResultState.Error(error = it.message.toString()))
+                    }
+            } catch (e: Exception) {
+                trySend(ResultState.Error(error = e.message.toString()))
+            }
+
+            awaitClose {
+                close()
+            }
         }
-    }
+
+    override suspend fun getAllWishListItems(): Flow<ResultState<List<WishListModel>>> =
+        callbackFlow {
+            trySend(ResultState.Loading)
+
+            try {
+                firebaseFirestore
+                    .collection(WISHLISTS_PATH)
+                    .document(firebaseAuth.currentUser!!.uid)
+                    .collection(WISHLIST_USER_ID_PATH)
+                    .get()
+                    .addOnSuccessListener {
+                        val wishListItemsList = it.documents.mapNotNull { document ->
+                            document.toObject(WishListModel::class.java)?.apply {
+                                wishId = document.id
+                            }
+                        }
+                        trySend(ResultState.Success(data = wishListItemsList))
+                    }
+                    .addOnFailureListener {
+                        trySend(ResultState.Error(error = it.message.toString()))
+                    }
+            } catch (e: Exception) {
+                trySend(ResultState.Error(error = e.message.toString()))
+            }
+
+            awaitClose {
+                close()
+            }
+        }
 }
