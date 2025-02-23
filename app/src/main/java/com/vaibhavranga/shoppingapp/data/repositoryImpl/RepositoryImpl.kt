@@ -227,4 +227,29 @@ class RepositoryImpl @Inject constructor(
                 close()
             }
         }
+
+//    override suspend fun deleteWishListItem(wishId: String): Flow<ResultState<String>> = callbackFlow {
+//        trySend(ResultState.Loading)
+//
+//        try {
+//            firebaseFirestore
+//                .collection(WISHLISTS_PATH)
+//                .document(firebaseAuth.currentUser!!.uid)
+//                .collection(WISHLIST_USER_ID_PATH)
+//                .document(wishId)
+//                .delete()
+//                .addOnSuccessListener {
+//                    trySend(ResultState.Success(data = "Wish deleted successfully"))
+//                }
+//                .addOnFailureListener {
+//                    trySend(ResultState.Error(error = it.message.toString()))
+//                }
+//        } catch (e: Exception) {
+//            trySend(ResultState.Error(error = e.message.toString()))
+//        }
+//
+//        awaitClose {
+//            close()
+//        }
+//    }
 }

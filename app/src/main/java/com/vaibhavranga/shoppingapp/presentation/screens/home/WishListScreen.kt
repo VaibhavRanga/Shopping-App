@@ -1,8 +1,10 @@
 package com.vaibhavranga.shoppingapp.presentation.screens.home
 
 import android.widget.Toast
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,7 +17,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -44,8 +49,12 @@ fun WishListScreen(
     viewModel: ViewModel = hiltViewModel()
 ) {
     val wishListState by viewModel.getAllWishListItemsState.collectAsStateWithLifecycle()
+    val allProductsInWishListState by viewModel.getAllProductsInWishListState.collectAsStateWithLifecycle()
     val context = LocalContext.current
     var isWishListShowing by remember { mutableStateOf(false) }
+    var isWishDeleteDialogShowing by remember { mutableStateOf(false) }
+    var productName by remember { mutableStateOf("") }
+    var productId by remember { mutableStateOf("") }
 
     LaunchedEffect(key1 = Unit) {
         viewModel.getAllWishListItems()
@@ -71,15 +80,29 @@ fun WishListScreen(
                 LazyColumn(
                     verticalArrangement = Arrangement.spacedBy(space = 8.dp)
                 ) {
-                    items(items = wishListState.data ?: emptyList()) { product ->
+                    items(items = allProductsInWishListState.data ?: emptyList()) { product ->
                         WishListProductItem(
-                            product = product,
-                            onProductClick = onProductClick
+                            product = product!!,
+                            onProductClick = onProductClick,
+                            onProductLongClickForDeletion = { name, id ->
+                                productName = name
+                                productId = id
+                                isWishDeleteDialogShowing = true
+                            }
                         )
                     }
                 }
             }
         }
+//        if (isWishDeleteDialogShowing) {
+//            DeleteFromWishListConfirmAlertDialog(
+//                onConfirmDelete = {
+//                    viewModel.deleteWishListItem(wishId = )
+//                },
+//                onDismissRequest = {},
+//                productName = productName
+//            )
+//        }
         when {
             wishListState.isLoading -> CircularProgressIndicator()
             wishListState.error != null -> {
@@ -88,16 +111,27 @@ fun WishListScreen(
             }
 
             wishListState.data != null -> {
+                viewModel.getAllProductsInWishList(
+                    productIdListInWishList = wishListState.data!!
+                )
+                viewModel.clearGetAllWishListItemsState()
+            }
+        }
+        when {
+            allProductsInWishListState.isLoading -> CircularProgressIndicator()
+            allProductsInWishListState.data != null -> {
                 isWishListShowing = true
             }
         }
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun WishListProductItem(
     product: ProductModel,
-    onProductClick: (productId: String) -> Unit
+    onProductClick: (productId: String) -> Unit,
+    onProductLongClickForDeletion: (productName: String, productId: String) -> Unit
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -105,9 +139,10 @@ fun WishListProductItem(
         modifier = Modifier
             .fillMaxWidth()
             .height(150.dp)
-            .clickable {
-                onProductClick(product.productId)
-            }
+            .combinedClickable(
+                onClick = { onProductClick(product.productId) },
+                onLongClick = {onProductLongClickForDeletion(product.name, product.productId)}
+            )
     ) {
         AsyncImage(
             model = product.imageUrl,
@@ -158,4 +193,27 @@ fun WishListProductItem(
             }
         }
     }
+}
+
+@Composable
+fun DeleteFromWishListConfirmAlertDialog(
+    onConfirmDelete: () -> Unit,
+    onDismissRequest: () -> Unit,
+    productName: String
+) {
+    AlertDialog(
+        onDismissRequest = onDismissRequest,
+        confirmButton = {
+            onConfirmDelete()
+        },
+        dismissButton = {
+            onDismissRequest()
+        },
+        title = {
+            Text(text = productName)
+        },
+        text = {
+            Text(text = "Delete this product from your wish list")
+        }
+    )
 }

@@ -36,6 +36,7 @@ class ViewModel @Inject constructor(
     private val getProductByIdUseCase: GetProductByIdUseCase,
     private val addToWishListUseCase: AddToWishListUseCase,
     private val getAllWishListItemsUseCase: GetAllWishListItemsUseCase,
+//    private val deleteWishListItemUseCase: DeleteWishListItemUseCase,
     private val firebaseAuth: FirebaseAuth
 ) : ViewModel() {
     private val _createUserState = MutableStateFlow(CreateUserState())
@@ -62,6 +63,12 @@ class ViewModel @Inject constructor(
 
     private val _getAllWishListItemsState = MutableStateFlow(GetAllWishListItemsState())
     val getAllWishListItemsState = _getAllWishListItemsState.asStateFlow()
+
+    private val _getAllProductsInWishListState = MutableStateFlow(GetAllProductsInWishListState())
+    val getAllProductsInWishListState = _getAllProductsInWishListState.asStateFlow()
+
+//    private val _deleteWishListItemState = MutableStateFlow(DeleteWishListItemState())
+//    val deleteWishListItemState = _deleteWishListItemState.asStateFlow()
 
     fun createUser(userData: UserDataModel) {
         viewModelScope.launch(Dispatchers.IO) {
@@ -227,28 +234,60 @@ class ViewModel @Inject constructor(
                         GetAllWishListItemsState(isLoading = true)
 
                     is ResultState.Success -> {
-                        val wishListItems = response.data
 
-                        if (wishListItems.isEmpty()) {
-                            _getAllWishListItemsState.value =
-                                GetAllWishListItemsState(isLoading = false, data = emptyList())
-                            return@collect
-                        }
-
-                        val productsList = wishListItems.mapNotNull { wishListItem ->
-                            getProductByIdUseCase.invoke(wishListItem.productId)
-                                .filterIsInstance<ResultState.Success<ProductModel>>()
-                                .map { it.data }
-                                .firstOrNull()
-                        }
+//                        if (wishListItems.isEmpty()) {
+//                            _getAllWishListItemsState.value =
+//                                GetAllWishListItemsState(isLoading = false, data = emptyList())
+//                            return@collect
+//                        }
+//
+//                        val productsList = wishListItems.mapNotNull { wishListItem ->
+//                            getProductByIdUseCase.invoke(wishListItem.productId)
+//                                .filterIsInstance<ResultState.Success<ProductModel>>()
+//                                .map { it.data }
+//                                .firstOrNull()
+//                        }
 
                         _getAllWishListItemsState.value =
-                            GetAllWishListItemsState(isLoading = false, data = productsList)
+                            GetAllWishListItemsState(isLoading = false, data = response.data)
                     }
                 }
             }
         }
     }
+
+    fun getAllProductsInWishList(
+        productIdListInWishList: List<WishListModel>
+    ) {
+        viewModelScope.launch(Dispatchers.IO) {
+            _getAllProductsInWishListState.value = GetAllProductsInWishListState(isLoading = true)
+            val productsList = productIdListInWishList.map { wishListItem ->
+                getProductByIdUseCase.invoke(wishListItem.productId)
+                    .filterIsInstance<ResultState.Success<ProductModel>>()
+                    .map { it.data }
+                    .firstOrNull()
+            }
+            _getAllProductsInWishListState.value =
+                GetAllProductsInWishListState(isLoading = false, data = productsList)
+        }
+    }
+
+//    fun deleteWishListItem(wishId: String) {
+//        viewModelScope.launch(Dispatchers.IO) {
+//            deleteWishListItemUseCase.invoke(wishId = wishId).collect { response ->
+//                when (response) {
+//                    is ResultState.Error -> _deleteWishListItemState.value =
+//                        DeleteWishListItemState(isLoading = false, error = response.error)
+//
+//                    ResultState.Loading -> _deleteWishListItemState.value =
+//                        DeleteWishListItemState(isLoading = true)
+//
+//                    is ResultState.Success -> _deleteWishListItemState.value =
+//                        DeleteWishListItemState(isLoading = false, data = response.data)
+//                }
+//            }
+//        }
+//    }
 
     fun clearGetAllWishListItemsState() {
         _getAllWishListItemsState.value = GetAllWishListItemsState()
@@ -304,5 +343,17 @@ data class AddToWishListState(
 data class GetAllWishListItemsState(
     val isLoading: Boolean = false,
     val error: String? = null,
-    val data: List<ProductModel>? = null
+    val data: List<WishListModel>? = null
 )
+
+data class GetAllProductsInWishListState(
+    val isLoading: Boolean = false,
+    val error: String? = null,
+    val data: List<ProductModel?>? = null
+)
+
+//data class DeleteWishListItemState(
+//    val isLoading: Boolean = false,
+//    val error: String? = null,
+//    val data: String? = null
+//)

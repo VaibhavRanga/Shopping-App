@@ -23,4 +23,6 @@ interface Repository {
     suspend fun addToWishList(wishListModel: WishListModel): Flow<ResultState<String>>
 
     suspend fun getAllWishListItems(): Flow<ResultState<List<WishListModel>>>
+
+//    suspend fun deleteWishListItem(wishId: String): Flow<ResultState<String>>
 }
