@@ -1,6 +1,8 @@
 package com.vaibhavranga.shoppingapp.presentation.screens.home
 
+import android.os.Build
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -57,6 +59,9 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
 import com.vaibhavranga.shoppingapp.domain.model.CategoryModel
 import com.vaibhavranga.shoppingapp.domain.model.ProductModel
 import com.vaibhavranga.shoppingapp.presentation.common.CustomTextFieldWithLeadingIcon
@@ -65,7 +70,8 @@ import com.vaibhavranga.shoppingapp.ui.theme.Gray
 import com.vaibhavranga.shoppingapp.ui.theme.Pink
 import com.vaibhavranga.shoppingapp.ui.theme.ShoppingAppTheme
 
-@OptIn(ExperimentalMaterial3Api::class)
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
 @Composable
 fun HomeScreen(
     onCategoryClick: (categoryName: String) -> Unit,
@@ -82,12 +88,20 @@ fun HomeScreen(
     var isShowingProducts by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState()
     var isSheetShowing by remember { mutableStateOf(false) }
+    val notificationsPermissionState = rememberPermissionState(
+        android.Manifest.permission.POST_NOTIFICATIONS
+    )
 
     LaunchedEffect(key1 = Unit) {
         viewModel.getAllCategories()
     }
     LaunchedEffect(key1 = Unit) {
         viewModel.getAllProducts()
+    }
+    LaunchedEffect(key1 = Unit) {
+        if (!notificationsPermissionState.status.isGranted) {
+            notificationsPermissionState.launchPermissionRequest()
+        }
     }
 
     Surface(

@@ -2,6 +2,7 @@ package com.vaibhavranga.shoppingapp.domain.di
 
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.messaging.FirebaseMessaging
 import com.vaibhavranga.shoppingapp.data.repositoryImpl.RepositoryImpl
 import com.vaibhavranga.shoppingapp.domain.repository.Repository
 import dagger.Module
@@ -17,6 +18,7 @@ object DomainDiModule {
     @Singleton
     fun provideRepository(
         firebaseAuth: FirebaseAuth,
-        firebaseFirestore: FirebaseFirestore
-    ): Repository = RepositoryImpl(firebaseAuth, firebaseFirestore)
+        firebaseFirestore: FirebaseFirestore,
+        firebaseMessaging: FirebaseMessaging
+    ): Repository = RepositoryImpl(firebaseAuth, firebaseFirestore, firebaseMessaging)
 }
