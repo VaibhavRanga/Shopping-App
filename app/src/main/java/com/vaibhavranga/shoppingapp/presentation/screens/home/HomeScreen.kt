@@ -421,7 +421,6 @@ fun FlashSaleBlock(
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun SearchResultProductItem(
     product: ProductModel,
