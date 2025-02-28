@@ -83,4 +83,8 @@ dependencies {
     implementation("com.google.firebase:firebase-storage")
     //firebase auth
     implementation("com.google.firebase:firebase-auth")
+    //firebase fcm
+    implementation("com.google.firebase:firebase-messaging")
+    //permissions-accompanist
+    implementation("com.google.accompanist:accompanist-permissions:0.37.2")
 }

@@ -2,9 +2,11 @@ package com.vaibhavranga.shoppingapp.data.repositoryImpl
 
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.messaging.FirebaseMessaging
 import com.vaibhavranga.shoppingapp.common.CATEGORY_PATH
 import com.vaibhavranga.shoppingapp.common.PRODUCT_PATH
 import com.vaibhavranga.shoppingapp.common.ResultState
+import com.vaibhavranga.shoppingapp.common.USER_FCM_TOKEN_PATH
 import com.vaibhavranga.shoppingapp.common.USER_PATH
 import com.vaibhavranga.shoppingapp.common.WISHLISTS_PATH
 import com.vaibhavranga.shoppingapp.common.WISHLIST_USER_ID_PATH
@@ -20,7 +22,8 @@ import javax.inject.Inject
 
 class RepositoryImpl @Inject constructor(
     private val firebaseAuth: FirebaseAuth,
-    private val firebaseFirestore: FirebaseFirestore
+    private val firebaseFirestore: FirebaseFirestore,
+    private val firebaseMessaging: FirebaseMessaging
 ) : Repository {
     override suspend fun registerUserWithEmailAndPassword(
         userData: UserDataModel
@@ -30,6 +33,7 @@ class RepositoryImpl @Inject constructor(
         try {
             firebaseAuth.createUserWithEmailAndPassword(userData.email, userData.password)
                 .addOnSuccessListener { authResult ->
+                    updateFCMToken(userId = authResult.user!!.uid)
                     firebaseFirestore.collection(USER_PATH).document(
                         authResult.user!!.uid
                     ).set(userData)
@@ -60,6 +64,7 @@ class RepositoryImpl @Inject constructor(
         try {
             firebaseAuth.signInWithEmailAndPassword(email, password)
                 .addOnSuccessListener {
+                    updateFCMToken(userId = it.user!!.uid)
                     trySend(ResultState.Success(data = "Sign in successful"))
                 }
                 .addOnFailureListener {
@@ -280,4 +285,19 @@ class RepositoryImpl @Inject constructor(
 //            close()
 //        }
 //    }
+
+    private fun updateFCMToken(userId: String) {
+        firebaseMessaging
+            .token
+            .addOnSuccessListener {
+                val token = it
+                
+                firebaseFirestore
+                    .collection(USER_FCM_TOKEN_PATH)
+                    .document(userId)
+                    .set(
+                        mapOf("token" to token)
+                    )
+            }
+    }
 }

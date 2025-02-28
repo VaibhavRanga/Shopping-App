@@ -9,3 +9,5 @@ const val USER_PATH = "users"
 const val WISHLISTS_PATH = "wishlists"
 
 const val WISHLIST_USER_ID_PATH = "userWishList"
+
+const val USER_FCM_TOKEN_PATH = "userFcmTokens"

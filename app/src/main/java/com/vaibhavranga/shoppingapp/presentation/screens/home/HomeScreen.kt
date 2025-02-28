@@ -1,10 +1,13 @@
 package com.vaibhavranga.shoppingapp.presentation.screens.home
 
+import android.os.Build
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
 import android.widget.Toast
-import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -22,10 +25,8 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.Notifications
@@ -69,7 +70,8 @@ import com.vaibhavranga.shoppingapp.ui.theme.Gray
 import com.vaibhavranga.shoppingapp.ui.theme.Pink
 import com.vaibhavranga.shoppingapp.ui.theme.ShoppingAppTheme
 
-@OptIn(ExperimentalMaterial3Api::class)
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
 @Composable
 fun HomeScreen(
     onCategoryClick: (categoryName: String) -> Unit,
@@ -85,6 +87,9 @@ fun HomeScreen(
     var isShowingProducts by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState()
     var isSheetShowing by remember { mutableStateOf(false) }
+    val notificationsPermissionState = rememberPermissionState(
+        android.Manifest.permission.POST_NOTIFICATIONS
+    )
     val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
 
     LaunchedEffect(key1 = Unit) {
@@ -92,6 +97,11 @@ fun HomeScreen(
     }
     LaunchedEffect(key1 = Unit) {
         viewModel.getAllProducts()
+    }
+    LaunchedEffect(key1 = Unit) {
+        if (!notificationsPermissionState.status.isGranted) {
+            notificationsPermissionState.launchPermissionRequest()
+        }
     }
 
     Surface(
