@@ -55,13 +55,18 @@ fun HomeNavigation(
                 bottomNavigationItemsList.forEach { navigationItem ->
                     NavigationBarItem(
                         icon = {
-                                Icon(
-                                    imageVector = navigationItem.icon,
-                                    contentDescription = navigationItem.title
-                                )
+                            Icon(
+                                imageVector = navigationItem.icon,
+                                contentDescription = navigationItem.title
+                            )
                         },
                         label = { Text(navigationItem.title) },
-                        selected = currentDestination?.hierarchy?.any { it.hasRoute(navigationItem.route::class.toString(), arguments = null) } == true,
+                        selected = currentDestination?.hierarchy?.any {
+                            it.hasRoute(
+                                navigationItem.route::class.toString(),
+                                arguments = null
+                            )
+                        } == true,
                         onClick = {
                             homeNavController.navigate(navigationItem.route) {
                                 // Pop up to the start destination of the graph to

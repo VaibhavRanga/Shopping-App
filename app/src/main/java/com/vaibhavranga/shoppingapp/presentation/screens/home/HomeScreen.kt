@@ -1,14 +1,17 @@
 package com.vaibhavranga.shoppingapp.presentation.screens.home
 
 import android.widget.Toast
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -16,6 +19,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -73,15 +77,15 @@ fun HomeScreen(
     onProductClick: (productId: String) -> Unit,
     viewModel: ViewModel = hiltViewModel()
 ) {
-    val allCategories = viewModel.getAllCategoriesState.collectAsStateWithLifecycle()
-    val allProducts = viewModel.getAllProductsState.collectAsStateWithLifecycle()
+    val allCategories by viewModel.getAllCategoriesState.collectAsStateWithLifecycle()
+    val allProducts by viewModel.getAllProductsState.collectAsStateWithLifecycle()
+    val searchResults by viewModel.searchProductState.collectAsStateWithLifecycle()
     val context = LocalContext.current
-    var searchQuery by remember { mutableStateOf("") }
-    val scrollState = rememberScrollState()
     var isShowingCategories by remember { mutableStateOf(false) }
     var isShowingProducts by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState()
     var isSheetShowing by remember { mutableStateOf(false) }
+    val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
 
     LaunchedEffect(key1 = Unit) {
         viewModel.getAllCategories()
@@ -102,36 +106,50 @@ fun HomeScreen(
                 verticalArrangement = Arrangement.spacedBy(space = 16.dp),
                 modifier = Modifier
                     .fillMaxSize()
-                    .verticalScroll(scrollState)
                     .padding(16.dp)
             ) {
                 SearchBarRow(
                     value = searchQuery,
-                    onSearchValueChange = { searchQuery = it },
+                    onSearchValueChange = { viewModel.updateSearchQuery(it) },
                     onNotificationsButtonClick = {
                         isSheetShowing = true
                     },
                     modifier = Modifier
                         .fillMaxWidth()
                 )
-                CategoriesBlock(
-                    isShowingCategories = isShowingCategories,
-                    categories = allCategories.value.data ?: emptyList(),
-                    onCategoryClick = {
-                        onCategoryClick(it)
-                    },
-                    onSeeMoreCategoriesClick = onSeeMoreCategoriesClick,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .wrapContentHeight()
-                )
-                FlashSaleBlock(
-                    isShowingProducts = isShowingProducts,
-                    products = allProducts.value.data ?: emptyList(),
-                    onProductClick = onProductClick,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                )
+                if (searchQuery.isNotEmpty() && searchResults.data?.isNotEmpty() == true) {
+                    LazyColumn(
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier
+                            .fillMaxSize()
+                    ) {
+                        items(items = searchResults.data ?: emptyList()) { product ->
+                            SearchResultProductItem(
+                                product = product,
+                                onProductClick = onProductClick
+                            )
+                        }
+                    }
+                } else {
+                    CategoriesBlock(
+                        isShowingCategories = isShowingCategories,
+                        categories = allCategories.data ?: emptyList(),
+                        onCategoryClick = {
+                            onCategoryClick(it)
+                        },
+                        onSeeMoreCategoriesClick = onSeeMoreCategoriesClick,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .wrapContentHeight()
+                    )
+                    FlashSaleBlock(
+                        isShowingProducts = isShowingProducts,
+                        products = allProducts.data ?: emptyList(),
+                        onProductClick = onProductClick,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                    )
+                }
             }
             if (isSheetShowing) {
                 ModalBottomSheet(
@@ -149,24 +167,24 @@ fun HomeScreen(
                 }
             }
             when {
-                allCategories.value.isLoading -> CircularProgressIndicator()
-                allCategories.value.error != null -> {
-                    Toast.makeText(context, allCategories.value.error.toString(), Toast.LENGTH_SHORT).show()
+                allCategories.isLoading -> CircularProgressIndicator()
+                allCategories.error != null -> {
+                    Toast.makeText(context, allCategories.error.toString(), Toast.LENGTH_SHORT).show()
                     viewModel.clearGetAllCategoriesState()
                 }
 
-                allCategories.value.data != null -> {
+                allCategories.data != null -> {
                     isShowingCategories = true
                 }
             }
             when {
-                allProducts.value.isLoading -> CircularProgressIndicator()
-                allProducts.value.error != null -> {
-                    Toast.makeText(context, allProducts.value.error.toString(), Toast.LENGTH_SHORT).show()
+                allProducts.isLoading -> CircularProgressIndicator()
+                allProducts.error != null -> {
+                    Toast.makeText(context, allProducts.error.toString(), Toast.LENGTH_SHORT).show()
                     viewModel.clearGetAllProductsState()
                 }
 
-                allProducts.value.data != null -> {
+                allProducts.data != null -> {
                     isShowingProducts = true
                 }
             }
@@ -398,6 +416,73 @@ fun FlashSaleBlock(
                         }
                     }
                 }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun SearchResultProductItem(
+    product: ProductModel,
+    onProductClick: (productId: String) -> Unit
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(space = 8.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(150.dp)
+            .clickable {
+                onProductClick(product.productId)
+            }
+    ) {
+        AsyncImage(
+            model = product.imageUrl,
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+                .fillMaxHeight()
+                .width(120.dp)
+                .border(
+                    width = 1.dp,
+                    color = Pink,
+                    shape = RoundedCornerShape(16.dp)
+                )
+                .clip(shape = RoundedCornerShape(16.dp))
+        )
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(space = 8.dp),
+            modifier = Modifier
+                .fillMaxSize()
+        ) {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(
+                    space = 8.dp,
+                    alignment = Alignment.CenterVertically
+                ),
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .weight(1f)
+            ) {
+                Text(
+                    text = product.name,
+                    maxLines = 3,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Text(
+                    text = product.description,
+                    maxLines = 3,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+            Column(
+                verticalArrangement = Arrangement.Center,
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .weight(1f)
+            ) {
+                Text(text = "Rs ${product.finalPrice}")
             }
         }
     }

@@ -15,11 +15,14 @@ import com.vaibhavranga.shoppingapp.domain.useCase.GetAllProductsByCategoryUseCa
 import com.vaibhavranga.shoppingapp.domain.useCase.GetAllProductsUseCase
 import com.vaibhavranga.shoppingapp.domain.useCase.GetAllWishListItemsUseCase
 import com.vaibhavranga.shoppingapp.domain.useCase.GetProductByIdUseCase
+import com.vaibhavranga.shoppingapp.domain.useCase.SearchProductUseCase
 import com.vaibhavranga.shoppingapp.domain.useCase.SignInWithEmailAndPasswordUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
@@ -36,6 +39,7 @@ class ViewModel @Inject constructor(
     private val getProductByIdUseCase: GetProductByIdUseCase,
     private val addToWishListUseCase: AddToWishListUseCase,
     private val getAllWishListItemsUseCase: GetAllWishListItemsUseCase,
+    private val searchProductUseCase: SearchProductUseCase,
 //    private val deleteWishListItemUseCase: DeleteWishListItemUseCase,
     private val firebaseAuth: FirebaseAuth
 ) : ViewModel() {
@@ -69,6 +73,17 @@ class ViewModel @Inject constructor(
 
 //    private val _deleteWishListItemState = MutableStateFlow(DeleteWishListItemState())
 //    val deleteWishListItemState = _deleteWishListItemState.asStateFlow()
+
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery = _searchQuery.asStateFlow()
+
+    private val _searchProductState = MutableStateFlow(SearchProductState())
+    val searchProductState = _searchProductState.asStateFlow()
+
+    fun updateSearchQuery(query: String) {
+        _searchQuery.value = query
+        searchProduct()
+    }
 
     fun createUser(userData: UserDataModel) {
         viewModelScope.launch(Dispatchers.IO) {
@@ -289,6 +304,19 @@ class ViewModel @Inject constructor(
 //        }
 //    }
 
+    @OptIn(FlowPreview::class)
+    private fun searchProduct() {
+        viewModelScope.launch(Dispatchers.IO) {
+            searchProductUseCase.invoke(query = searchQuery.value).debounce(500L).collect { response ->
+                when (response) {
+                    is ResultState.Error -> _searchProductState.value = SearchProductState(isLoading = false, error = response.error)
+                    ResultState.Loading -> _searchProductState.value = SearchProductState(isLoading = true)
+                    is ResultState.Success -> _searchProductState.value = SearchProductState(isLoading = false, data = response.data)
+                }
+            }
+        }
+    }
+
     fun clearGetAllWishListItemsState() {
         _getAllWishListItemsState.value = GetAllWishListItemsState()
     }
@@ -350,6 +378,12 @@ data class GetAllProductsInWishListState(
     val isLoading: Boolean = false,
     val error: String? = null,
     val data: List<ProductModel?>? = null
+)
+
+data class SearchProductState(
+    val isLoading: Boolean = false,
+    val error: String? = null,
+    val data: List<ProductModel>? = null
 )
 
 //data class DeleteWishListItemState(
