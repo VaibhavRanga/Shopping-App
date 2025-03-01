@@ -27,4 +27,6 @@ interface Repository {
 //    suspend fun deleteWishListItem(wishId: String): Flow<ResultState<String>>
 
     suspend fun searchProduct(query: String): Flow<ResultState<List<ProductModel>>>
+
+    suspend fun getFlashSaleProducts(): Flow<ResultState<List<ProductModel>>>
 }

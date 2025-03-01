@@ -13,6 +13,7 @@ import androidx.navigation.compose.navigation
 import androidx.navigation.toRoute
 import com.vaibhavranga.shoppingapp.presentation.screens.home.AllCategoriesScreen
 import com.vaibhavranga.shoppingapp.presentation.screens.home.AllProductsByCategoryScreen
+import com.vaibhavranga.shoppingapp.presentation.screens.home.AllProductsScreen
 import com.vaibhavranga.shoppingapp.presentation.screens.home.CartScreen
 import com.vaibhavranga.shoppingapp.presentation.screens.home.HomeScreen
 import com.vaibhavranga.shoppingapp.presentation.screens.home.ProductScreen
@@ -49,6 +50,20 @@ fun HomeNavGraph(
                     },
                     onProductClick = {
                         homeNavController.navigate(Home.ProductScreenRoute(productId = it))
+                    },
+                    onBrowseAllProductsClick = {
+                        homeNavController.navigate(Home.AllProductsScreenRoute)
+                    }
+                )
+            }
+            composable<Home.AllProductsScreenRoute> {
+                AllProductsScreen(
+                    onProductClick = {
+                        homeNavController.navigate(
+                            Home.ProductScreenRoute(
+                                productId = it
+                            )
+                        )
                     }
                 )
             }

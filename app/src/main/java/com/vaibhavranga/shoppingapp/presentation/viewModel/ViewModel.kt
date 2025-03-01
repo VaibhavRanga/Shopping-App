@@ -14,6 +14,7 @@ import com.vaibhavranga.shoppingapp.domain.useCase.GetAllCategoriesUseCase
 import com.vaibhavranga.shoppingapp.domain.useCase.GetAllProductsByCategoryUseCase
 import com.vaibhavranga.shoppingapp.domain.useCase.GetAllProductsUseCase
 import com.vaibhavranga.shoppingapp.domain.useCase.GetAllWishListItemsUseCase
+import com.vaibhavranga.shoppingapp.domain.useCase.GetFlashSaleProductsUseCase
 import com.vaibhavranga.shoppingapp.domain.useCase.GetProductByIdUseCase
 import com.vaibhavranga.shoppingapp.domain.useCase.SearchProductUseCase
 import com.vaibhavranga.shoppingapp.domain.useCase.SignInWithEmailAndPasswordUseCase
@@ -40,6 +41,7 @@ class ViewModel @Inject constructor(
     private val addToWishListUseCase: AddToWishListUseCase,
     private val getAllWishListItemsUseCase: GetAllWishListItemsUseCase,
     private val searchProductUseCase: SearchProductUseCase,
+    private val getFlashSaleProductsUseCase: GetFlashSaleProductsUseCase,
 //    private val deleteWishListItemUseCase: DeleteWishListItemUseCase,
     private val firebaseAuth: FirebaseAuth
 ) : ViewModel() {
@@ -70,6 +72,9 @@ class ViewModel @Inject constructor(
 
     private val _getAllProductsInWishListState = MutableStateFlow(GetAllProductsInWishListState())
     val getAllProductsInWishListState = _getAllProductsInWishListState.asStateFlow()
+
+    private val _getFlashSaleProductsState = MutableStateFlow(GetFlashSaleProductsState())
+    val getFlashSaleProductsState = _getFlashSaleProductsState.asStateFlow()
 
 //    private val _deleteWishListItemState = MutableStateFlow(DeleteWishListItemState())
 //    val deleteWishListItemState = _deleteWishListItemState.asStateFlow()
@@ -271,6 +276,10 @@ class ViewModel @Inject constructor(
         }
     }
 
+    fun clearGetAllWishListItemsState() {
+        _getAllWishListItemsState.value = GetAllWishListItemsState()
+    }
+
     fun getAllProductsInWishList(
         productIdListInWishList: List<WishListModel>
     ) {
@@ -307,18 +316,47 @@ class ViewModel @Inject constructor(
     @OptIn(FlowPreview::class)
     private fun searchProduct() {
         viewModelScope.launch(Dispatchers.IO) {
-            searchProductUseCase.invoke(query = searchQuery.value).debounce(500L).collect { response ->
+            searchProductUseCase
+                .invoke(query = searchQuery.value)
+                .debounce(500L)
+                .collect { response ->
+                    when (response) {
+                        is ResultState.Error -> _searchProductState.value =
+                            SearchProductState(isLoading = false, error = response.error)
+
+                        ResultState.Loading -> _searchProductState.value =
+                            SearchProductState(isLoading = true)
+
+                        is ResultState.Success -> _searchProductState.value =
+                            SearchProductState(isLoading = false, data = response.data)
+                    }
+                }
+        }
+    }
+
+    fun clearSearchProductState() {
+        _searchProductState.value = SearchProductState()
+    }
+
+    fun getFlashSaleProducts() {
+        viewModelScope.launch(Dispatchers.IO) {
+            getFlashSaleProductsUseCase.invoke().collect { response ->
                 when (response) {
-                    is ResultState.Error -> _searchProductState.value = SearchProductState(isLoading = false, error = response.error)
-                    ResultState.Loading -> _searchProductState.value = SearchProductState(isLoading = true)
-                    is ResultState.Success -> _searchProductState.value = SearchProductState(isLoading = false, data = response.data)
+                    is ResultState.Error -> _getFlashSaleProductsState.value =
+                        GetFlashSaleProductsState(isLoading = false, error = response.error)
+
+                    ResultState.Loading -> _getFlashSaleProductsState.value =
+                        GetFlashSaleProductsState(isLoading = true)
+
+                    is ResultState.Success -> _getFlashSaleProductsState.value =
+                        GetFlashSaleProductsState(isLoading = false, data = response.data)
                 }
             }
         }
     }
 
-    fun clearGetAllWishListItemsState() {
-        _getAllWishListItemsState.value = GetAllWishListItemsState()
+    fun clearGetFlashSaleProductsState() {
+        _getFlashSaleProductsState.value = GetFlashSaleProductsState()
     }
 
     fun signOut() {
@@ -391,3 +429,9 @@ data class SearchProductState(
 //    val error: String? = null,
 //    val data: String? = null
 //)
+
+data class GetFlashSaleProductsState(
+    val isLoading: Boolean = false,
+    val error: String? = null,
+    val data: List<ProductModel>? = null
+)

@@ -261,6 +261,34 @@ class RepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun getFlashSaleProducts(): Flow<ResultState<List<ProductModel>>> = callbackFlow {
+        trySend(ResultState.Loading)
+
+        try {
+            firebaseFirestore
+                .collection(PRODUCT_PATH)
+                .limit(8)
+                .get()
+                .addOnSuccessListener {
+                    val products = it.documents.mapNotNull { document ->
+                        document.toObject(ProductModel::class.java)?.apply {
+                            productId = document.id
+                        }
+                    }
+                    trySend(ResultState.Success(data = products))
+                }
+                .addOnFailureListener {
+                    trySend(ResultState.Error(error = it.message.toString()))
+                }
+        } catch (e: Exception) {
+            trySend(ResultState.Error(error = e.message.toString()))
+        }
+
+        awaitClose {
+            close()
+        }
+    }
+
 //    override suspend fun deleteWishListItem(wishId: String): Flow<ResultState<String>> = callbackFlow {
 //        trySend(ResultState.Loading)
 //

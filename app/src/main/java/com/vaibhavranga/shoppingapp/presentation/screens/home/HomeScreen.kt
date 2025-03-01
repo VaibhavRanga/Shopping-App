@@ -1,11 +1,7 @@
 package com.vaibhavranga.shoppingapp.presentation.screens.home
 
 import android.os.Build
-import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.google.accompanist.permissions.isGranted
-import com.google.accompanist.permissions.rememberPermissionState
 import android.widget.Toast
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -62,6 +58,9 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
 import com.vaibhavranga.shoppingapp.domain.model.CategoryModel
 import com.vaibhavranga.shoppingapp.domain.model.ProductModel
 import com.vaibhavranga.shoppingapp.presentation.common.CustomTextFieldWithLeadingIcon
@@ -70,37 +69,41 @@ import com.vaibhavranga.shoppingapp.ui.theme.Gray
 import com.vaibhavranga.shoppingapp.ui.theme.Pink
 import com.vaibhavranga.shoppingapp.ui.theme.ShoppingAppTheme
 
-@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
 @Composable
 fun HomeScreen(
     onCategoryClick: (categoryName: String) -> Unit,
     onSeeMoreCategoriesClick: () -> Unit,
     onProductClick: (productId: String) -> Unit,
+    onBrowseAllProductsClick: () -> Unit,
     viewModel: ViewModel = hiltViewModel()
 ) {
     val allCategories by viewModel.getAllCategoriesState.collectAsStateWithLifecycle()
-    val allProducts by viewModel.getAllProductsState.collectAsStateWithLifecycle()
+    val flashSaleProducts by viewModel.getFlashSaleProductsState.collectAsStateWithLifecycle()
     val searchResults by viewModel.searchProductState.collectAsStateWithLifecycle()
     val context = LocalContext.current
     var isShowingCategories by remember { mutableStateOf(false) }
     var isShowingProducts by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState()
     var isSheetShowing by remember { mutableStateOf(false) }
-    val notificationsPermissionState = rememberPermissionState(
-        android.Manifest.permission.POST_NOTIFICATIONS
-    )
+    val notificationsPermissionState = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        rememberPermissionState(
+            android.Manifest.permission.POST_NOTIFICATIONS
+        )
+    } else {
+        null
+    }
     val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
 
     LaunchedEffect(key1 = Unit) {
         viewModel.getAllCategories()
     }
     LaunchedEffect(key1 = Unit) {
-        viewModel.getAllProducts()
+        viewModel.getFlashSaleProducts()
     }
     LaunchedEffect(key1 = Unit) {
-        if (!notificationsPermissionState.status.isGranted) {
-            notificationsPermissionState.launchPermissionRequest()
+        if (notificationsPermissionState?.status?.isGranted != true) {
+            notificationsPermissionState?.launchPermissionRequest()
         }
     }
 
@@ -154,8 +157,9 @@ fun HomeScreen(
                     )
                     FlashSaleBlock(
                         isShowingProducts = isShowingProducts,
-                        products = allProducts.data ?: emptyList(),
+                        products = flashSaleProducts.data ?: emptyList(),
                         onProductClick = onProductClick,
+                        onBrowseAllProductsClick = onBrowseAllProductsClick,
                         modifier = Modifier
                             .fillMaxWidth()
                     )
@@ -179,7 +183,8 @@ fun HomeScreen(
             when {
                 allCategories.isLoading -> CircularProgressIndicator()
                 allCategories.error != null -> {
-                    Toast.makeText(context, allCategories.error.toString(), Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, allCategories.error.toString(), Toast.LENGTH_SHORT)
+                        .show()
                     viewModel.clearGetAllCategoriesState()
                 }
 
@@ -188,14 +193,21 @@ fun HomeScreen(
                 }
             }
             when {
-                allProducts.isLoading -> CircularProgressIndicator()
-                allProducts.error != null -> {
-                    Toast.makeText(context, allProducts.error.toString(), Toast.LENGTH_SHORT).show()
-                    viewModel.clearGetAllProductsState()
+                flashSaleProducts.isLoading -> CircularProgressIndicator()
+                flashSaleProducts.error != null -> {
+                    Toast.makeText(context, flashSaleProducts.error.toString(), Toast.LENGTH_SHORT).show()
+                    viewModel.clearGetFlashSaleProductsState()
                 }
 
-                allProducts.data != null -> {
+                flashSaleProducts.data != null -> {
                     isShowingProducts = true
+                }
+            }
+            when {
+                searchResults.isLoading -> CircularProgressIndicator()
+                searchResults.error != null -> {
+                    Toast.makeText(context, searchResults.error, Toast.LENGTH_SHORT).show()
+                    viewModel.clearSearchProductState()
                 }
             }
         }
@@ -321,6 +333,7 @@ fun FlashSaleBlock(
     isShowingProducts: Boolean,
     products: List<ProductModel>,
     onProductClick: (productId: String) -> Unit,
+    onBrowseAllProductsClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -337,6 +350,14 @@ fun FlashSaleBlock(
                 text = "Flash Sale",
                 style = MaterialTheme.typography.titleLarge
             )
+            TextButton(
+                onClick = onBrowseAllProductsClick
+            ) {
+                Text(
+                    text = "Browse all products",
+                    color = Pink
+                )
+            }
         }
         if (isShowingProducts) {
             LazyRow(
@@ -515,7 +536,8 @@ private fun HomeScreenPreview() {
                     date = 1738663952022,
                     availableUnits = 39
                 )
-            )
+            ),
+            onBrowseAllProductsClick = {}
         )
     }
 }

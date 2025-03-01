@@ -31,6 +31,9 @@ sealed class Home {
     object AllCategoriesScreenRoute : Home()
 
     @Serializable
+    object AllProductsScreenRoute : Home()
+
+    @Serializable
     data class AllProductsByCategoryScreenRoute(
         val categoryName: String
     ) : Home()
