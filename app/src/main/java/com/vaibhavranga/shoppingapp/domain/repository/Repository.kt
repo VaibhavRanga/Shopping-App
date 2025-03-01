@@ -32,4 +32,6 @@ interface Repository {
     suspend fun getFlashSaleProducts(): Flow<ResultState<List<ProductModel>>>
 
     suspend fun addProductToCart(cartItemModel: CartItemModel): Flow<ResultState<String>>
+
+    suspend fun getAllCartItems(): Flow<ResultState<List<CartItemModel>>>
 }

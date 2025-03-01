@@ -235,64 +235,91 @@ class RepositoryImpl @Inject constructor(
             }
         }
 
-    override suspend fun searchProduct(query: String): Flow<ResultState<List<ProductModel>>> = callbackFlow {
-        trySend(ResultState.Loading)
+    override suspend fun searchProduct(query: String): Flow<ResultState<List<ProductModel>>> =
+        callbackFlow {
+            trySend(ResultState.Loading)
 
-        try {
-            firebaseFirestore
-                .collection(PRODUCT_PATH)
-                .orderBy("name")
-                .startAt(query)
-                .get()
-                .addOnSuccessListener {
-                    val products = it.documents.mapNotNull { document ->
-                        document.toObject(ProductModel::class.java)?.apply {
-                            productId = document.id
+            try {
+                firebaseFirestore
+                    .collection(PRODUCT_PATH)
+                    .orderBy("name")
+                    .startAt(query)
+                    .get()
+                    .addOnSuccessListener {
+                        val products = it.documents.mapNotNull { document ->
+                            document.toObject(ProductModel::class.java)?.apply {
+                                productId = document.id
+                            }
                         }
+                        trySend(ResultState.Success(data = products))
                     }
-                    trySend(ResultState.Success(data = products))
-                }
-                .addOnFailureListener {
-                    trySend(ResultState.Error(error = it.message.toString()))
-                }
-        } catch (e: Exception) {
-            trySend(ResultState.Error(error = e.message.toString()))
+                    .addOnFailureListener {
+                        trySend(ResultState.Error(error = it.message.toString()))
+                    }
+            } catch (e: Exception) {
+                trySend(ResultState.Error(error = e.message.toString()))
+            }
+
+            awaitClose {
+                close()
+            }
         }
 
-        awaitClose {
-            close()
-        }
-    }
+    override suspend fun getFlashSaleProducts(): Flow<ResultState<List<ProductModel>>> =
+        callbackFlow {
+            trySend(ResultState.Loading)
 
-    override suspend fun getFlashSaleProducts(): Flow<ResultState<List<ProductModel>>> = callbackFlow {
-        trySend(ResultState.Loading)
-
-        try {
-            firebaseFirestore
-                .collection(PRODUCT_PATH)
-                .limit(8)
-                .get()
-                .addOnSuccessListener {
-                    val products = it.documents.mapNotNull { document ->
-                        document.toObject(ProductModel::class.java)?.apply {
-                            productId = document.id
+            try {
+                firebaseFirestore
+                    .collection(PRODUCT_PATH)
+                    .limit(8)
+                    .get()
+                    .addOnSuccessListener {
+                        val products = it.documents.mapNotNull { document ->
+                            document.toObject(ProductModel::class.java)?.apply {
+                                productId = document.id
+                            }
                         }
+                        trySend(ResultState.Success(data = products))
                     }
-                    trySend(ResultState.Success(data = products))
-                }
-                .addOnFailureListener {
-                    trySend(ResultState.Error(error = it.message.toString()))
-                }
-        } catch (e: Exception) {
-            trySend(ResultState.Error(error = e.message.toString()))
+                    .addOnFailureListener {
+                        trySend(ResultState.Error(error = it.message.toString()))
+                    }
+            } catch (e: Exception) {
+                trySend(ResultState.Error(error = e.message.toString()))
+            }
+
+            awaitClose {
+                close()
+            }
         }
 
-        awaitClose {
-            close()
-        }
-    }
+    override suspend fun addProductToCart(cartItemModel: CartItemModel): Flow<ResultState<String>> =
+        callbackFlow {
+            trySend(ResultState.Loading)
 
-    override suspend fun addProductToCart(cartItemModel: CartItemModel): Flow<ResultState<String>> = callbackFlow {
+            try {
+                firebaseFirestore
+                    .collection(CART_PATH)
+                    .document(firebaseAuth.currentUser!!.uid)
+                    .collection(CART_USER_ID_PATH)
+                    .add(cartItemModel)
+                    .addOnSuccessListener {
+                        trySend(ResultState.Success(data = "Item added to cart"))
+                    }
+                    .addOnFailureListener {
+                        trySend(ResultState.Error(error = it.message.toString()))
+                    }
+            } catch (e: Exception) {
+                trySend(ResultState.Error(error = e.message.toString()))
+            }
+
+            awaitClose {
+                close()
+            }
+        }
+
+    override suspend fun getAllCartItems(): Flow<ResultState<List<CartItemModel>>> = callbackFlow {
         trySend(ResultState.Loading)
 
         try {
@@ -300,9 +327,14 @@ class RepositoryImpl @Inject constructor(
                 .collection(CART_PATH)
                 .document(firebaseAuth.currentUser!!.uid)
                 .collection(CART_USER_ID_PATH)
-                .add(cartItemModel)
+                .get()
                 .addOnSuccessListener {
-                    trySend(ResultState.Success(data = "Item added to cart"))
+                    val cartItems = it.documents.mapNotNull { document ->
+                        document.toObject(CartItemModel::class.java)?.apply {
+                            cartItemId = document.id
+                        }
+                    }
+                    trySend(ResultState.Success(data = cartItems))
                 }
                 .addOnFailureListener {
                     trySend(ResultState.Error(error = it.message.toString()))
@@ -346,7 +378,7 @@ class RepositoryImpl @Inject constructor(
             .token
             .addOnSuccessListener {
                 val token = it
-                
+
                 firebaseFirestore
                     .collection(USER_FCM_TOKEN_PATH)
                     .document(userId)
