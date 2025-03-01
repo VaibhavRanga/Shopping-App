@@ -1,6 +1,7 @@
 package com.vaibhavranga.shoppingapp.domain.repository
 
 import com.vaibhavranga.shoppingapp.common.ResultState
+import com.vaibhavranga.shoppingapp.domain.model.CartItemModel
 import com.vaibhavranga.shoppingapp.domain.model.CategoryModel
 import com.vaibhavranga.shoppingapp.domain.model.ProductModel
 import com.vaibhavranga.shoppingapp.domain.model.UserDataModel
@@ -29,4 +30,6 @@ interface Repository {
     suspend fun searchProduct(query: String): Flow<ResultState<List<ProductModel>>>
 
     suspend fun getFlashSaleProducts(): Flow<ResultState<List<ProductModel>>>
+
+    suspend fun addProductToCart(cartItemModel: CartItemModel): Flow<ResultState<String>>
 }

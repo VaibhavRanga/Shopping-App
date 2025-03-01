@@ -3,6 +3,8 @@ package com.vaibhavranga.shoppingapp.data.repositoryImpl
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.messaging.FirebaseMessaging
+import com.vaibhavranga.shoppingapp.common.CART_PATH
+import com.vaibhavranga.shoppingapp.common.CART_USER_ID_PATH
 import com.vaibhavranga.shoppingapp.common.CATEGORY_PATH
 import com.vaibhavranga.shoppingapp.common.PRODUCT_PATH
 import com.vaibhavranga.shoppingapp.common.ResultState
@@ -10,6 +12,7 @@ import com.vaibhavranga.shoppingapp.common.USER_FCM_TOKEN_PATH
 import com.vaibhavranga.shoppingapp.common.USER_PATH
 import com.vaibhavranga.shoppingapp.common.WISHLISTS_PATH
 import com.vaibhavranga.shoppingapp.common.WISHLIST_USER_ID_PATH
+import com.vaibhavranga.shoppingapp.domain.model.CartItemModel
 import com.vaibhavranga.shoppingapp.domain.model.CategoryModel
 import com.vaibhavranga.shoppingapp.domain.model.ProductModel
 import com.vaibhavranga.shoppingapp.domain.model.UserDataModel
@@ -276,6 +279,30 @@ class RepositoryImpl @Inject constructor(
                         }
                     }
                     trySend(ResultState.Success(data = products))
+                }
+                .addOnFailureListener {
+                    trySend(ResultState.Error(error = it.message.toString()))
+                }
+        } catch (e: Exception) {
+            trySend(ResultState.Error(error = e.message.toString()))
+        }
+
+        awaitClose {
+            close()
+        }
+    }
+
+    override suspend fun addProductToCart(cartItemModel: CartItemModel): Flow<ResultState<String>> = callbackFlow {
+        trySend(ResultState.Loading)
+
+        try {
+            firebaseFirestore
+                .collection(CART_PATH)
+                .document(firebaseAuth.currentUser!!.uid)
+                .collection(CART_USER_ID_PATH)
+                .add(cartItemModel)
+                .addOnSuccessListener {
+                    trySend(ResultState.Success(data = "Item added to cart"))
                 }
                 .addOnFailureListener {
                     trySend(ResultState.Error(error = it.message.toString()))

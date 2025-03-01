@@ -4,10 +4,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.vaibhavranga.shoppingapp.common.ResultState
+import com.vaibhavranga.shoppingapp.domain.model.CartItemModel
 import com.vaibhavranga.shoppingapp.domain.model.CategoryModel
 import com.vaibhavranga.shoppingapp.domain.model.ProductModel
 import com.vaibhavranga.shoppingapp.domain.model.UserDataModel
 import com.vaibhavranga.shoppingapp.domain.model.WishListModel
+import com.vaibhavranga.shoppingapp.domain.useCase.AddProductToCartUseCase
 import com.vaibhavranga.shoppingapp.domain.useCase.AddToWishListUseCase
 import com.vaibhavranga.shoppingapp.domain.useCase.CreateUserUseCase
 import com.vaibhavranga.shoppingapp.domain.useCase.GetAllCategoriesUseCase
@@ -42,6 +44,7 @@ class ViewModel @Inject constructor(
     private val getAllWishListItemsUseCase: GetAllWishListItemsUseCase,
     private val searchProductUseCase: SearchProductUseCase,
     private val getFlashSaleProductsUseCase: GetFlashSaleProductsUseCase,
+    private val addProductToCartUseCase: AddProductToCartUseCase,
 //    private val deleteWishListItemUseCase: DeleteWishListItemUseCase,
     private val firebaseAuth: FirebaseAuth
 ) : ViewModel() {
@@ -84,6 +87,9 @@ class ViewModel @Inject constructor(
 
     private val _searchProductState = MutableStateFlow(SearchProductState())
     val searchProductState = _searchProductState.asStateFlow()
+
+    private val _addProductToCartState = MutableStateFlow(AddProductToCartState())
+    val addProductToCartState = _addProductToCartState.asStateFlow()
 
     fun updateSearchQuery(query: String) {
         _searchQuery.value = query
@@ -362,6 +368,27 @@ class ViewModel @Inject constructor(
     fun signOut() {
         firebaseAuth.signOut()
     }
+
+    fun addProductToCart(cartItemModel: CartItemModel) {
+        viewModelScope.launch(Dispatchers.IO) {
+            addProductToCartUseCase.invoke(cartItemModel = cartItemModel).collect { response ->
+                when (response) {
+                    is ResultState.Error -> _addProductToCartState.value =
+                        AddProductToCartState(isLoading = false, error = response.error)
+
+                    ResultState.Loading -> _addProductToCartState.value =
+                        AddProductToCartState(isLoading = true)
+
+                    is ResultState.Success -> _addProductToCartState.value =
+                        AddProductToCartState(isLoading = false, data = response.data)
+                }
+            }
+        }
+    }
+
+    fun clearAddProductToCartState() {
+        _addProductToCartState.value = AddProductToCartState()
+    }
 }
 
 data class CreateUserState(
@@ -434,4 +461,10 @@ data class GetFlashSaleProductsState(
     val isLoading: Boolean = false,
     val error: String? = null,
     val data: List<ProductModel>? = null
+)
+
+data class AddProductToCartState(
+    val isLoading: Boolean = false,
+    val error: String? = null,
+    val data: String? = null
 )
