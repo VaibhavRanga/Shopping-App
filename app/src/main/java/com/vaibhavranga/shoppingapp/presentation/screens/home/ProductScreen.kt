@@ -3,7 +3,6 @@ package com.vaibhavranga.shoppingapp.presentation.screens.home
 import android.content.res.Configuration
 import android.widget.Toast
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -24,6 +23,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -45,7 +45,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.vaibhavranga.shoppingapp.domain.model.ProductModel
-import com.vaibhavranga.shoppingapp.domain.model.WishListModel
 import com.vaibhavranga.shoppingapp.presentation.components.StarRatingBar
 import com.vaibhavranga.shoppingapp.presentation.viewModel.ViewModel
 import com.vaibhavranga.shoppingapp.ui.theme.Gray
@@ -73,10 +72,10 @@ fun ProductScreen(
             .fillMaxSize()
     ) {
         if (isShowingProduct) {
-            ProductImage(
+            ProductDetails(
                 product = productState.data ?: ProductModel(),
                 onAddToWishListClick = {
-                    viewModel.addToWishList(wishListModel = it)
+                    viewModel.addToWishList(productId = it)
                 },
                 onAddToCartClick = {
                     viewModel.addProductToCart(productId = productId)
@@ -120,9 +119,9 @@ fun ProductScreen(
 }
 
 @Composable
-fun ProductImage(
+fun ProductDetails(
     product: ProductModel,
-    onAddToWishListClick: (wishListItem: WishListModel) -> Unit,
+    onAddToWishListClick: (productId: String) -> Unit,
     onAddToCartClick: (productId: String) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -192,18 +191,17 @@ fun ProductImage(
                     rating = 3.0f,
                     onRatingChanged = {}
                 )
-                Icon(
-                    imageVector = Icons.Outlined.FavoriteBorder,
-                    contentDescription = "Add to wishlist",
-                    tint = Pink,
-                    modifier = Modifier
-                        .clickable {
-                            val wishListItem = WishListModel(
-                                productId = product.productId
-                            )
-                            onAddToWishListClick(wishListItem)
-                        }
-                )
+                IconButton(
+                    onClick = {
+                        onAddToWishListClick(product.productId)
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.FavoriteBorder,
+                        contentDescription = "Add to wishlist",
+                        tint = Pink
+                    )
+                }
             }
             Row {
                 Text(
@@ -269,7 +267,7 @@ fun ProductImage(
 @Composable
 private fun ProductDisplayPreview() {
     ShoppingAppTheme {
-        ProductImage(
+        ProductDetails(
             product = ProductModel(
                 name = "Nice Formal Pants",
                 productId = "",

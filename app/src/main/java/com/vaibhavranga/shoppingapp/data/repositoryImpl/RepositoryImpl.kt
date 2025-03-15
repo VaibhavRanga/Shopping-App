@@ -15,7 +15,6 @@ import com.vaibhavranga.shoppingapp.common.WISHLIST_USER_ID_PATH
 import com.vaibhavranga.shoppingapp.domain.model.CategoryModel
 import com.vaibhavranga.shoppingapp.domain.model.ProductModel
 import com.vaibhavranga.shoppingapp.domain.model.UserDataModel
-import com.vaibhavranga.shoppingapp.domain.model.WishListModel
 import com.vaibhavranga.shoppingapp.domain.repository.Repository
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -179,7 +178,7 @@ class RepositoryImpl @Inject constructor(
             }
         }
 
-    override suspend fun addToWishList(wishListModel: WishListModel): Flow<ResultState<String>> =
+    override suspend fun addToWishList(productId: String): Flow<ResultState<String>> =
         callbackFlow {
             trySend(ResultState.Loading)
 
@@ -188,9 +187,10 @@ class RepositoryImpl @Inject constructor(
                     .collection(WISHLISTS_PATH)
                     .document(firebaseAuth.currentUser!!.uid)
                     .collection(WISHLIST_USER_ID_PATH)
-                    .add(wishListModel)
+                    .document(productId)
+                    .set(mapOf<String, Any>())
                     .addOnSuccessListener {
-                        trySend(ResultState.Success(data = "Added to wishlist"))
+                        trySend(ResultState.Success(data = "Product added to wishlist"))
                     }
                     .addOnFailureListener {
                         trySend(ResultState.Error(error = it.message.toString()))
@@ -204,7 +204,7 @@ class RepositoryImpl @Inject constructor(
             }
         }
 
-    override suspend fun getAllWishListItems(): Flow<ResultState<List<WishListModel>>> =
+    override suspend fun getAllWishListItems(): Flow<ResultState<List<String>>> =
         callbackFlow {
             trySend(ResultState.Loading)
 
@@ -214,11 +214,9 @@ class RepositoryImpl @Inject constructor(
                     .document(firebaseAuth.currentUser!!.uid)
                     .collection(WISHLIST_USER_ID_PATH)
                     .get()
-                    .addOnSuccessListener {
-                        val wishListItemsList = it.documents.mapNotNull { document ->
-                            document.toObject(WishListModel::class.java)?.apply {
-                                wishId = document.id
-                            }
+                    .addOnSuccessListener { querySnapshot ->
+                        val wishListItemsList = querySnapshot.documents.mapNotNull {
+                            it.id
                         }
                         trySend(ResultState.Success(data = wishListItemsList))
                     }
@@ -233,6 +231,31 @@ class RepositoryImpl @Inject constructor(
                 close()
             }
         }
+
+    override suspend fun deleteWishListItem(productId: String): Flow<ResultState<String>> = callbackFlow {
+        trySend(ResultState.Loading)
+
+        try {
+            firebaseFirestore
+                .collection(WISHLISTS_PATH)
+                .document(firebaseAuth.currentUser!!.uid)
+                .collection(WISHLIST_USER_ID_PATH)
+                .document(productId)
+                .delete()
+                .addOnSuccessListener {
+                    trySend(ResultState.Success(data = "Item deleted successfully"))
+                }
+                .addOnFailureListener {
+                    trySend(ResultState.Error(error = it.message.toString()))
+                }
+        } catch (e: Exception) {
+            trySend(ResultState.Error(error = e.message.toString()))
+        }
+
+        awaitClose {
+            close()
+        }
+    }
 
     override suspend fun searchProduct(query: String): Flow<ResultState<List<ProductModel>>> =
         callbackFlow {
@@ -329,7 +352,7 @@ class RepositoryImpl @Inject constructor(
                 .collection(CART_USER_ID_PATH)
                 .get()
                 .addOnSuccessListener { querySnapshot ->
-                    val cartItems = querySnapshot.map {
+                    val cartItems = querySnapshot.mapNotNull {
                         it.id
                     }
                     trySend(ResultState.Success(data = cartItems))
@@ -370,31 +393,6 @@ class RepositoryImpl @Inject constructor(
             close()
         }
     }
-
-//    override suspend fun deleteWishListItem(wishId: String): Flow<ResultState<String>> = callbackFlow {
-//        trySend(ResultState.Loading)
-//
-//        try {
-//            firebaseFirestore
-//                .collection(WISHLISTS_PATH)
-//                .document(firebaseAuth.currentUser!!.uid)
-//                .collection(WISHLIST_USER_ID_PATH)
-//                .document(wishId)
-//                .delete()
-//                .addOnSuccessListener {
-//                    trySend(ResultState.Success(data = "Wish deleted successfully"))
-//                }
-//                .addOnFailureListener {
-//                    trySend(ResultState.Error(error = it.message.toString()))
-//                }
-//        } catch (e: Exception) {
-//            trySend(ResultState.Error(error = e.message.toString()))
-//        }
-//
-//        awaitClose {
-//            close()
-//        }
-//    }
 
     private fun updateFCMToken(userId: String) {
         firebaseMessaging

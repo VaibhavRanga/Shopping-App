@@ -4,7 +4,6 @@ import com.vaibhavranga.shoppingapp.common.ResultState
 import com.vaibhavranga.shoppingapp.domain.model.CategoryModel
 import com.vaibhavranga.shoppingapp.domain.model.ProductModel
 import com.vaibhavranga.shoppingapp.domain.model.UserDataModel
-import com.vaibhavranga.shoppingapp.domain.model.WishListModel
 import kotlinx.coroutines.flow.Flow
 
 interface Repository {
@@ -20,11 +19,11 @@ interface Repository {
 
     suspend fun getProductById(productId: String): Flow<ResultState<ProductModel>>
 
-    suspend fun addToWishList(wishListModel: WishListModel): Flow<ResultState<String>>
+    suspend fun addToWishList(productId: String): Flow<ResultState<String>>
 
-    suspend fun getAllWishListItems(): Flow<ResultState<List<WishListModel>>>
+    suspend fun getAllWishListItems(): Flow<ResultState<List<String>>>
 
-//    suspend fun deleteWishListItem(wishId: String): Flow<ResultState<String>>
+    suspend fun deleteWishListItem(productId: String): Flow<ResultState<String>>
 
     suspend fun searchProduct(query: String): Flow<ResultState<List<ProductModel>>>
 
