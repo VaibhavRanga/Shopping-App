@@ -46,7 +46,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.vaibhavranga.shoppingapp.domain.model.ProductModel
 import com.vaibhavranga.shoppingapp.domain.model.WishListModel
-import com.vaibhavranga.shoppingapp.presentation.common.StarRatingBar
+import com.vaibhavranga.shoppingapp.presentation.components.StarRatingBar
 import com.vaibhavranga.shoppingapp.presentation.viewModel.ViewModel
 import com.vaibhavranga.shoppingapp.ui.theme.Gray
 import com.vaibhavranga.shoppingapp.ui.theme.Pink
@@ -59,6 +59,7 @@ fun ProductScreen(
 ) {
     val productState by viewModel.getProductByIdState.collectAsStateWithLifecycle()
     val wishListState by viewModel.addToWishListState.collectAsStateWithLifecycle()
+    val addToCartState by viewModel.addProductToCartState.collectAsStateWithLifecycle()
     var isShowingProduct by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
@@ -76,6 +77,9 @@ fun ProductScreen(
                 product = productState.data ?: ProductModel(),
                 onAddToWishListClick = {
                     viewModel.addToWishList(wishListModel = it)
+                },
+                onAddToCartClick = {
+                    viewModel.addProductToCart(productId = productId)
                 }
             )
         }
@@ -101,6 +105,17 @@ fun ProductScreen(
                 viewModel.clearAddToWishListState()
             }
         }
+        when {
+            addToCartState.isLoading -> CircularProgressIndicator()
+            addToCartState.error != null -> {
+                Toast.makeText(context, addToCartState.error, Toast.LENGTH_SHORT).show()
+                viewModel.clearAddProductToCartState()
+            }
+            addToCartState.data != null -> {
+                Toast.makeText(context, addToCartState.data, Toast.LENGTH_SHORT).show()
+                viewModel.clearAddProductToCartState()
+            }
+        }
     }
 }
 
@@ -108,6 +123,7 @@ fun ProductScreen(
 fun ProductImage(
     product: ProductModel,
     onAddToWishListClick: (wishListItem: WishListModel) -> Unit,
+    onAddToCartClick: (productId: String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val verticalScrollState = rememberScrollState()
@@ -165,11 +181,30 @@ fun ProductImage(
                 text = product.name,
                 style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold)
             )
-            StarRatingBar(
-                maxStars = 5,
-                rating = 3.0f,
-                onRatingChanged = {}
-            )
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+            ) {
+                StarRatingBar(
+                    maxStars = 5,
+                    rating = 3.0f,
+                    onRatingChanged = {}
+                )
+                Icon(
+                    imageVector = Icons.Outlined.FavoriteBorder,
+                    contentDescription = "Add to wishlist",
+                    tint = Pink,
+                    modifier = Modifier
+                        .clickable {
+                            val wishListItem = WishListModel(
+                                productId = product.productId
+                            )
+                            onAddToWishListClick(wishListItem)
+                        }
+                )
+            }
             Row {
                 Text(
                     text = "Rs:",
@@ -211,7 +246,9 @@ fun ProductImage(
                     .height(8.dp)
             )
             Button(
-                onClick = {},
+                onClick = {
+                    onAddToCartClick(product.productId)
+                },
                 shape = RoundedCornerShape(16.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Gray),
                 modifier = Modifier
@@ -223,35 +260,6 @@ fun ProductImage(
                 modifier = Modifier
                     .height(8.dp)
             )
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(
-                    space = 8.dp,
-                    alignment = Alignment.CenterHorizontally
-                ),
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .fillMaxWidth()
-            ) {
-                Icon(
-                    imageVector = Icons.Outlined.FavoriteBorder,
-                    contentDescription = "Add to wishlist",
-                    tint = Pink,
-                    modifier = Modifier
-                        .clickable {
-
-                        }
-                )
-                Text(text = "Add to Wishlist",
-                    style = MaterialTheme.typography.labelLarge.copy(color = Pink),
-                    modifier = Modifier
-                        .clickable {
-                            val wishListItem = WishListModel(
-                                productId = product.productId
-                            )
-                            onAddToWishListClick(wishListItem)
-                        }
-                )
-            }
         }
     }
 }
@@ -273,7 +281,8 @@ private fun ProductDisplayPreview() {
                 date = System.currentTimeMillis(),
                 availableUnits = 30
             ),
-            onAddToWishListClick = {}
+            onAddToWishListClick = {},
+            onAddToCartClick = {}
         )
     }
 }

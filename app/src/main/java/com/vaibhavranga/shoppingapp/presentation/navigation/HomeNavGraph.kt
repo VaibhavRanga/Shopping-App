@@ -99,7 +99,11 @@ fun HomeNavGraph(
                 )
             }
             composable<Home.CartScreenRoute> {
-                CartScreen()
+                CartScreen(
+                    onProductClick = { productId ->
+                        homeNavController.navigate(Home.ProductScreenRoute(productId = productId))
+                    }
+                )
             }
             composable<Home.ProfileScreenRoute> {
                 ProfileScreen(

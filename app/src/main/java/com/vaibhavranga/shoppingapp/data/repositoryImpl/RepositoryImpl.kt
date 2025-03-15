@@ -3,6 +3,8 @@ package com.vaibhavranga.shoppingapp.data.repositoryImpl
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.messaging.FirebaseMessaging
+import com.vaibhavranga.shoppingapp.common.CART_PATH
+import com.vaibhavranga.shoppingapp.common.CART_USER_ID_PATH
 import com.vaibhavranga.shoppingapp.common.CATEGORY_PATH
 import com.vaibhavranga.shoppingapp.common.PRODUCT_PATH
 import com.vaibhavranga.shoppingapp.common.ResultState
@@ -232,22 +234,105 @@ class RepositoryImpl @Inject constructor(
             }
         }
 
-    override suspend fun searchProduct(query: String): Flow<ResultState<List<ProductModel>>> = callbackFlow {
+    override suspend fun searchProduct(query: String): Flow<ResultState<List<ProductModel>>> =
+        callbackFlow {
+            trySend(ResultState.Loading)
+
+            try {
+                firebaseFirestore
+                    .collection(PRODUCT_PATH)
+                    .orderBy("name")
+                    .startAt(query)
+                    .get()
+                    .addOnSuccessListener {
+                        val products = it.documents.mapNotNull { document ->
+                            document.toObject(ProductModel::class.java)?.apply {
+                                productId = document.id
+                            }
+                        }
+                        trySend(ResultState.Success(data = products))
+                    }
+                    .addOnFailureListener {
+                        trySend(ResultState.Error(error = it.message.toString()))
+                    }
+            } catch (e: Exception) {
+                trySend(ResultState.Error(error = e.message.toString()))
+            }
+
+            awaitClose {
+                close()
+            }
+        }
+
+    override suspend fun getFlashSaleProducts(): Flow<ResultState<List<ProductModel>>> =
+        callbackFlow {
+            trySend(ResultState.Loading)
+
+            try {
+                firebaseFirestore
+                    .collection(PRODUCT_PATH)
+                    .limit(8)
+                    .get()
+                    .addOnSuccessListener {
+                        val products = it.documents.mapNotNull { document ->
+                            document.toObject(ProductModel::class.java)?.apply {
+                                productId = document.id
+                            }
+                        }
+                        trySend(ResultState.Success(data = products))
+                    }
+                    .addOnFailureListener {
+                        trySend(ResultState.Error(error = it.message.toString()))
+                    }
+            } catch (e: Exception) {
+                trySend(ResultState.Error(error = e.message.toString()))
+            }
+
+            awaitClose {
+                close()
+            }
+        }
+
+    override suspend fun addProductToCart(productId: String): Flow<ResultState<String>> =
+        callbackFlow {
+            trySend(ResultState.Loading)
+
+            try {
+                firebaseFirestore
+                    .collection(CART_PATH)
+                    .document(firebaseAuth.currentUser!!.uid)
+                    .collection(CART_USER_ID_PATH)
+                    .document(productId)
+                    .set(mapOf<String, Any>())
+                    .addOnSuccessListener {
+                        trySend(ResultState.Success(data = "Item added to cart"))
+                    }
+                    .addOnFailureListener {
+                        trySend(ResultState.Error(error = it.message.toString()))
+                    }
+            } catch (e: Exception) {
+                trySend(ResultState.Error(error = e.message.toString()))
+            }
+
+            awaitClose {
+                close()
+            }
+        }
+
+    override suspend fun getAllCartItems(): Flow<ResultState<List<String>>> = callbackFlow {
         trySend(ResultState.Loading)
 
         try {
             firebaseFirestore
-                .collection(PRODUCT_PATH)
-                .orderBy("name")
-                .startAt(query)
+                .collection(CART_PATH)
+                .document(firebaseAuth.currentUser!!.uid)
+                .collection(CART_USER_ID_PATH)
                 .get()
-                .addOnSuccessListener {
-                    val products = it.documents.mapNotNull { document ->
-                        document.toObject(ProductModel::class.java)?.apply {
-                            productId = document.id
-                        }
+                .addOnSuccessListener { querySnapshot ->
+                    val cartItems = querySnapshot.map {
+                        it.id
                     }
-                    trySend(ResultState.Success(data = products))
+                    trySend(ResultState.Success(data = cartItems))
                 }
                 .addOnFailureListener {
                     trySend(ResultState.Error(error = it.message.toString()))
@@ -261,21 +346,18 @@ class RepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getFlashSaleProducts(): Flow<ResultState<List<ProductModel>>> = callbackFlow {
+    override suspend fun deleteCartItem(productId: String): Flow<ResultState<String>> = callbackFlow {
         trySend(ResultState.Loading)
 
         try {
             firebaseFirestore
-                .collection(PRODUCT_PATH)
-                .limit(8)
-                .get()
+                .collection(CART_PATH)
+                .document(firebaseAuth.currentUser!!.uid)
+                .collection(CART_USER_ID_PATH)
+                .document(productId)
+                .delete()
                 .addOnSuccessListener {
-                    val products = it.documents.mapNotNull { document ->
-                        document.toObject(ProductModel::class.java)?.apply {
-                            productId = document.id
-                        }
-                    }
-                    trySend(ResultState.Success(data = products))
+                    trySend(ResultState.Success(data = "Item deleted successfully"))
                 }
                 .addOnFailureListener {
                     trySend(ResultState.Error(error = it.message.toString()))
@@ -319,7 +401,7 @@ class RepositoryImpl @Inject constructor(
             .token
             .addOnSuccessListener {
                 val token = it
-                
+
                 firebaseFirestore
                     .collection(USER_FCM_TOKEN_PATH)
                     .document(userId)

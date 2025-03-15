@@ -1,4 +1,4 @@
-package com.vaibhavranga.shoppingapp.presentation.common
+package com.vaibhavranga.shoppingapp.presentation.components
 
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer

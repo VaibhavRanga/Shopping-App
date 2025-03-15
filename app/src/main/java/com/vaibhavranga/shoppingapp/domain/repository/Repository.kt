@@ -29,4 +29,10 @@ interface Repository {
     suspend fun searchProduct(query: String): Flow<ResultState<List<ProductModel>>>
 
     suspend fun getFlashSaleProducts(): Flow<ResultState<List<ProductModel>>>
+
+    suspend fun addProductToCart(productId: String): Flow<ResultState<String>>
+
+    suspend fun getAllCartItems(): Flow<ResultState<List<String>>>
+
+    suspend fun deleteCartItem(productId: String): Flow<ResultState<String>>
 }
