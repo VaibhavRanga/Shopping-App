@@ -45,7 +45,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.vaibhavranga.shoppingapp.R
 import com.vaibhavranga.shoppingapp.domain.model.UserDataModel
-import com.vaibhavranga.shoppingapp.presentation.common.CustomTextField
+import com.vaibhavranga.shoppingapp.presentation.components.CustomTextField
 import com.vaibhavranga.shoppingapp.presentation.viewModel.ViewModel
 import com.vaibhavranga.shoppingapp.ui.theme.Pink
 import com.vaibhavranga.shoppingapp.ui.theme.ShoppingAppTheme

@@ -44,10 +44,9 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
-import com.vaibhavranga.shoppingapp.domain.model.CartItemModel
 import com.vaibhavranga.shoppingapp.domain.model.ProductModel
 import com.vaibhavranga.shoppingapp.domain.model.WishListModel
-import com.vaibhavranga.shoppingapp.presentation.common.StarRatingBar
+import com.vaibhavranga.shoppingapp.presentation.components.StarRatingBar
 import com.vaibhavranga.shoppingapp.presentation.viewModel.ViewModel
 import com.vaibhavranga.shoppingapp.ui.theme.Gray
 import com.vaibhavranga.shoppingapp.ui.theme.Pink
@@ -80,10 +79,7 @@ fun ProductScreen(
                     viewModel.addToWishList(wishListModel = it)
                 },
                 onAddToCartClick = {
-                    val cartItemModel = CartItemModel(
-                        productId = it
-                    )
-                    viewModel.addProductToCart(cartItemModel = cartItemModel)
+                    viewModel.addProductToCart(productId = productId)
                 }
             )
         }

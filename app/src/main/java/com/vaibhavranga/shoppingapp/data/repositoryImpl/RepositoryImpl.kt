@@ -12,7 +12,6 @@ import com.vaibhavranga.shoppingapp.common.USER_FCM_TOKEN_PATH
 import com.vaibhavranga.shoppingapp.common.USER_PATH
 import com.vaibhavranga.shoppingapp.common.WISHLISTS_PATH
 import com.vaibhavranga.shoppingapp.common.WISHLIST_USER_ID_PATH
-import com.vaibhavranga.shoppingapp.domain.model.CartItemModel
 import com.vaibhavranga.shoppingapp.domain.model.CategoryModel
 import com.vaibhavranga.shoppingapp.domain.model.ProductModel
 import com.vaibhavranga.shoppingapp.domain.model.UserDataModel
@@ -294,7 +293,7 @@ class RepositoryImpl @Inject constructor(
             }
         }
 
-    override suspend fun addProductToCart(cartItemModel: CartItemModel): Flow<ResultState<String>> =
+    override suspend fun addProductToCart(productId: String): Flow<ResultState<String>> =
         callbackFlow {
             trySend(ResultState.Loading)
 
@@ -303,7 +302,8 @@ class RepositoryImpl @Inject constructor(
                     .collection(CART_PATH)
                     .document(firebaseAuth.currentUser!!.uid)
                     .collection(CART_USER_ID_PATH)
-                    .add(cartItemModel)
+                    .document(productId)
+                    .set(mapOf<String, Any>())
                     .addOnSuccessListener {
                         trySend(ResultState.Success(data = "Item added to cart"))
                     }
@@ -319,7 +319,7 @@ class RepositoryImpl @Inject constructor(
             }
         }
 
-    override suspend fun getAllCartItems(): Flow<ResultState<List<CartItemModel>>> = callbackFlow {
+    override suspend fun getAllCartItems(): Flow<ResultState<List<String>>> = callbackFlow {
         trySend(ResultState.Loading)
 
         try {
@@ -328,13 +328,36 @@ class RepositoryImpl @Inject constructor(
                 .document(firebaseAuth.currentUser!!.uid)
                 .collection(CART_USER_ID_PATH)
                 .get()
-                .addOnSuccessListener {
-                    val cartItems = it.documents.mapNotNull { document ->
-                        document.toObject(CartItemModel::class.java)?.apply {
-                            cartItemId = document.id
-                        }
+                .addOnSuccessListener { querySnapshot ->
+                    val cartItems = querySnapshot.map {
+                        it.id
                     }
                     trySend(ResultState.Success(data = cartItems))
+                }
+                .addOnFailureListener {
+                    trySend(ResultState.Error(error = it.message.toString()))
+                }
+        } catch (e: Exception) {
+            trySend(ResultState.Error(error = e.message.toString()))
+        }
+
+        awaitClose {
+            close()
+        }
+    }
+
+    override suspend fun deleteCartItem(productId: String): Flow<ResultState<String>> = callbackFlow {
+        trySend(ResultState.Loading)
+
+        try {
+            firebaseFirestore
+                .collection(CART_PATH)
+                .document(firebaseAuth.currentUser!!.uid)
+                .collection(CART_USER_ID_PATH)
+                .document(productId)
+                .delete()
+                .addOnSuccessListener {
+                    trySend(ResultState.Success(data = "Item deleted successfully"))
                 }
                 .addOnFailureListener {
                     trySend(ResultState.Error(error = it.message.toString()))

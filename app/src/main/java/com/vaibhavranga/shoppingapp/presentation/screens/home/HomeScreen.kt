@@ -63,7 +63,7 @@ import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.vaibhavranga.shoppingapp.domain.model.CategoryModel
 import com.vaibhavranga.shoppingapp.domain.model.ProductModel
-import com.vaibhavranga.shoppingapp.presentation.common.CustomTextFieldWithLeadingIcon
+import com.vaibhavranga.shoppingapp.presentation.components.CustomTextFieldWithLeadingIcon
 import com.vaibhavranga.shoppingapp.presentation.viewModel.ViewModel
 import com.vaibhavranga.shoppingapp.ui.theme.Gray
 import com.vaibhavranga.shoppingapp.ui.theme.Pink
