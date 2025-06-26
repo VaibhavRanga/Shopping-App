@@ -49,36 +49,26 @@ fun HomeNavigation(
 
     Scaffold(
         bottomBar = {
+            val navBackStackEntry by homeNavController.currentBackStackEntryAsState()
+            val currentDestination = navBackStackEntry?.destination
             NavigationBar {
-                val navBackStackEntry by homeNavController.currentBackStackEntryAsState()
-                val currentDestination = navBackStackEntry?.destination
-                bottomNavigationItemsList.forEach { navigationItem ->
+                bottomNavigationItemsList.forEachIndexed { index, item ->
+                    val isSelected = currentDestination?.hierarchy?.any { it.route == item.route::class.qualifiedName } == true
                     NavigationBarItem(
                         icon = {
                             Icon(
-                                imageVector = navigationItem.icon,
-                                contentDescription = navigationItem.title
+                                imageVector = item.icon,
+                                contentDescription = item.title
                             )
                         },
-                        label = { Text(navigationItem.title) },
-                        selected = currentDestination?.hierarchy?.any {
-                            it.hasRoute(
-                                navigationItem.route::class.toString(),
-                                arguments = null
-                            )
-                        } == true,
+                        label = { Text(item.title) },
+                        selected = isSelected,
                         onClick = {
-                            homeNavController.navigate(navigationItem.route) {
-                                // Pop up to the start destination of the graph to
-                                // avoid building up a large stack of destinations
-                                // on the back stack as users select items
+                            homeNavController.navigate(item.route) {
                                 popUpTo(homeNavController.graph.findStartDestination().id) {
                                     saveState = true
                                 }
-                                // Avoid multiple copies of the same destination when
-                                // reselecting the same item
                                 launchSingleTop = true
-                                // Restore state when reselecting a previously selected item
                                 restoreState = true
                             }
                         }
